@@ -1,131 +1,131 @@
 CREATE DATABASE produccion;
 
 -- 1. Tablas Maestras (Sin dependencias)
-CREATE TABLE Proveedor (
-    ID_Proveedor INT PRIMARY KEY,
-    Nombre VARCHAR(100),
-    Pais VARCHAR(50)
+CREATE TABLE proveedor (
+    id_proveedor INT PRIMARY KEY,
+    nombre VARCHAR(100),
+    pais VARCHAR(50)
 );
 
-CREATE TABLE Tipo_Categoria (
-    ID_Categoria INT PRIMARY KEY,
-    Nombre VARCHAR(100)
+CREATE TABLE tipo_categoria (
+    id_categoria INT PRIMARY KEY,
+    nombre VARCHAR(100)
 );
 
-CREATE TABLE Recepcion (
-    ID_Recepcion INT PRIMARY KEY,
-    Tipo VARCHAR(50),
-    Fecha_Recepcion DATE
+CREATE TABLE recepcion (
+    id_recepcion INT PRIMARY KEY,
+    tipo VARCHAR(50),
+    fecha_recepcion DATE
 );
 
-CREATE TABLE Motivo_Rechazo (
-    ID_Rechazado INT PRIMARY KEY,
-    Descripcion TEXT,
-    Destino VARCHAR(100)
+CREATE TABLE motivo_rechazo (
+    id_rechazado INT PRIMARY KEY,
+    descripcion TEXT,
+    destino VARCHAR(100)
 );
 
-CREATE TABLE Empleado (
-    ID_Empleado INT PRIMARY KEY,
-    Nombre1 VARCHAR(50) NOT NULL,
-    Nombre2 VARCHAR(50),
-    Apellido1 VARCHAR(50) NOT NULL,
-    Apellido2 VARCHAR(50) NOT NULL
+CREATE TABLE empleado (
+    id_empleado INT PRIMARY KEY,
+    nombre_1 VARCHAR(50) NOT NULL,
+    nombre_2 VARCHAR(50),
+    apellido_1 VARCHAR(50) NOT NULL,
+    apellido_2 VARCHAR(50) NOT NULL
 );
 
-CREATE TABLE Estado (
-    ID_Estado INT PRIMARY KEY,
-    Nombre_Estado VARCHAR(50)
+CREATE TABLE estado (
+    id_estado INT PRIMARY KEY,
+    nombre_estado VARCHAR(50)
 );
 
-CREATE TABLE Tipo_Control (
-    ID_TipoControl INT PRIMARY KEY,
-    Nombre VARCHAR(100)
+CREATE TABLE tipo_control (
+    id_tipo_control INT PRIMARY KEY,
+    nombre VARCHAR(100)
 );
 
-CREATE TABLE Lote_Produccion (
-    ID_Lote_Produccion INT PRIMARY KEY,
-    Estado_Lote VARCHAR(50),
-    Fecha_Elab DATE
+CREATE TABLE lote_produccion (
+    id_lote_produccion INT PRIMARY KEY,
+    estado_lote VARCHAR(50),
+    fecha_elab DATE
 );
 
 -- 2. Tablas con dependencias de primer nivel
-CREATE TABLE Orden_Compra (
-    ID_Compra INT PRIMARY KEY,
-    Fecha DATE,
-    Metodo_Pago VARCHAR(50),
-    Total DECIMAL(10,2),
-    ID_Proveedor INT,
-    FOREIGN KEY (ID_Proveedor) REFERENCES Proveedor(ID_Proveedor)
+CREATE TABLE orden_compra (
+    id_compra INT PRIMARY KEY,
+    fecha DATE,
+    metodo_pago VARCHAR(50),
+    total DECIMAL(10,2),
+    id_proveedor INT,
+    FOREIGN KEY (id_proveedor) REFERENCES proveedor(id_proveedor)
 );
 
-CREATE TABLE Materia_Prima (
-    ID_Materia INT PRIMARY KEY,
-    Nombre VARCHAR(100),
-    Descripcion TEXT,
-    ID_Categoria INT,
-    FOREIGN KEY (ID_Categoria) REFERENCES Tipo_Categoria(ID_Categoria)
+CREATE TABLE materia_prima (
+    id_materia INT PRIMARY KEY,
+    nombre VARCHAR(100),
+    descripcion TEXT,
+    id_categoria INT,
+    FOREIGN KEY (id_categoria) REFERENCES tipo_categoria(id_categoria)
 );
 
 -- 3. Tablas con múltiples dependencias (Relaciones y Lotes)
-CREATE TABLE Detalle (
-    ID_Compra INT,
-    ID_Materia INT,
-    Unidad_de_medida VARCHAR(20),
-    Cantidad INT,
-    Precio_Unitario DECIMAL(10,2),
-    PRIMARY KEY (ID_Compra, ID_Materia),
-    FOREIGN KEY (ID_Compra) REFERENCES Orden_Compra(ID_Compra),
-    FOREIGN KEY (ID_Materia) REFERENCES Materia_Prima(ID_Materia)
-);
-
-CREATE TABLE Lote_MateriaPrima (
-    ID_Lote INT PRIMARY KEY,
-    Cantidad INT,
-    Pais VARCHAR(50),
-    Estado_Lote VARCHAR(50),
-    Fecha_Vencimiento DATE,
-    ID_Materia INT,
-    ID_Recepcion INT,
-    ID_Compra INT,
-    ID_Rechazo INT,
-    FOREIGN KEY (ID_Materia) REFERENCES Materia_Prima(ID_Materia),
-    FOREIGN KEY (ID_Recepcion) REFERENCES Recepcion(ID_Recepcion),
-    FOREIGN KEY (ID_Compra) REFERENCES Orden_Compra(ID_Compra),
-    FOREIGN KEY (ID_Rechazo) REFERENCES Motivo_Rechazo(ID_Rechazado)
-);
-
-CREATE TABLE Control_De_Calidad (
-    ID_control INT PRIMARY KEY,
-    Unidad_de_Medida VARCHAR(20),
-    Observacion TEXT,
-    Hora TIME,
-    fecha DATE,
-    Aprobado BOOLEAN,
-    ID_TipoControl INT,
-    ID_Empleado INT,
-    ID_Lote INT,
-    ID_Estado INT,
-    FOREIGN KEY (ID_TipoControl) REFERENCES Tipo_Control(ID_TipoControl),
-    FOREIGN KEY (ID_Empleado) REFERENCES Empleado(ID_Empleado),
-    FOREIGN KEY (ID_Lote) REFERENCES Lote_MateriaPrima(ID_Lote),
-    FOREIGN KEY (ID_Estado) REFERENCES Estado(ID_Estado)
-);
-
-CREATE TABLE Tipo_de_Control (
-    ID_Materia INT,
-    ID_tipo_control INT,
-    Valor_Numerico DECIMAL(10,2),
-    Descripcion_Adicional TEXT, -- Reemplazo de 'Desc' y '?'
-    PRIMARY KEY (ID_Materia, ID_tipo_control),
-    FOREIGN KEY (ID_Materia) REFERENCES Materia_Prima(ID_Materia),
-    FOREIGN KEY (ID_tipo_control) REFERENCES Tipo_Control(ID_TipoControl)
-);
-
-CREATE TABLE Utiliza (
-    ID_Lote_Produccion INT,
-    ID_Lote INT,
+CREATE TABLE detalle (
+    id_compra INT,
+    id_materia INT,
+    unidad_de_medida VARCHAR(20),
     cantidad INT,
-    PRIMARY KEY (ID_Lote_Produccion, ID_Lote),
-    FOREIGN KEY (ID_Lote_Produccion) REFERENCES Lote_Produccion(ID_Lote_Produccion),
-    FOREIGN KEY (ID_Lote) REFERENCES Lote_MateriaPrima(ID_Lote)
+    precio_unitario DECIMAL(10,2),
+    PRIMARY KEY (id_compra, id_materia),
+    FOREIGN KEY (id_compra) REFERENCES orden_compra(id_compra),
+    FOREIGN KEY (id_materia) REFERENCES materia_prima(id_materia)
+);
+
+CREATE TABLE lote_materia_prima (
+    id_lote INT PRIMARY KEY,
+    cantidad INT,
+    pais VARCHAR(50),
+    estado_lote VARCHAR(50),
+    fecha_vencimiento DATE,
+    id_materia INT,
+    id_recepcion INT,
+    id_compra INT,
+    id_rechazo INT,
+    FOREIGN KEY (id_materia) REFERENCES materia_prima(id_materia),
+    FOREIGN KEY (id_recepcion) REFERENCES recepcion(id_recepcion),
+    FOREIGN KEY (id_compra) REFERENCES orden_compra(id_compra),
+    FOREIGN KEY (id_rechazo) REFERENCES motivo_rechazo(id_rechazado)
+);
+
+CREATE TABLE control_de_calidad (
+    id_control INT PRIMARY KEY,
+    unidad_de_medida VARCHAR(20),
+    observacion TEXT,
+    hora TIME,
+    fecha DATE,
+    aprobado BOOLEAN,
+    id_tipo_control INT,
+    id_empleado INT,
+    id_lote INT,
+    id_estado INT,
+    FOREIGN KEY (id_tipo_control) REFERENCES tipo_control(id_tipo_control),
+    FOREIGN KEY (id_empleado) REFERENCES empleado(id_empleado),
+    FOREIGN KEY (id_lote) REFERENCES lote_materia_prima(id_lote),
+    FOREIGN KEY (id_estado) REFERENCES estado(id_estado)
+);
+
+CREATE TABLE tipo_de_control (
+    id_materia INT,
+    id_tipo_control INT,
+    valor_numerico DECIMAL(10,2),
+    descripcion_adicional TEXT,
+    PRIMARY KEY (id_materia, id_tipo_control),
+    FOREIGN KEY (id_materia) REFERENCES materia_prima(id_materia),
+    FOREIGN KEY (id_tipo_control) REFERENCES tipo_control(id_tipo_control)
+);
+
+CREATE TABLE utiliza (
+    id_lote_produccion INT,
+    id_lote INT,
+    cantidad INT,
+    PRIMARY KEY (id_lote_produccion, id_lote),
+    FOREIGN KEY (id_lote_produccion) REFERENCES lote_produccion(id_lote_produccion),
+    FOREIGN KEY (id_lote) REFERENCES lote_materia_prima(id_lote)
 );
