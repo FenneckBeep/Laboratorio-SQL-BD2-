@@ -8,12 +8,18 @@ CREATE USER compras WITH PASSWORD '1234';
 
 CREATE USER auditor WITH PASSWORD '1234';
 
-GRANT ALL ON produccion TO gerente_calidad;
+GRANT CONNECT ON DATABASE produccion TO gerente_calidad;
 
-GRANT SELECT, INSERT ON control_calidad TO inspector,
+GRANT USAGE ON SCHEMA public TO gerente_calidad;
 
-GRANT SELECT ON lotes, materias_primas TO inspector;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO gerente_calidad;
 
-GRANT SELECT, INSERT ON proveedores, orden_compra, lote_materia_prima, recepcion TO compras;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO gerente_calidad;
+
+GRANT SELECT, INSERT ON control_de_calidad TO inspector;
+
+GRANT SELECT ON lote_materia_prima, materia_prima TO inspector;
+
+GRANT SELECT, INSERT ON proveedor, orden_compra, lote_materia_prima, recepcion TO compras;
 
 GRANT SELECT ON vista.lista TO auditor; 
