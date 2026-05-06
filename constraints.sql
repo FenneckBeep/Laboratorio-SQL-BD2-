@@ -1,4 +1,4 @@
--- 2. Definición de Primary Keys
+-- 1. Definición de Primary Keys
 ALTER TABLE proveedor ADD PRIMARY KEY (id_proveedor);
 ALTER TABLE tipo_categoria ADD PRIMARY KEY (id_categoria);
 ALTER TABLE recepcion ADD PRIMARY KEY (id_recepcion);
@@ -15,7 +15,7 @@ ALTER TABLE control_de_calidad ADD PRIMARY KEY (id_control);
 ALTER TABLE tipo_de_control ADD PRIMARY KEY (id_materia, id_tipo_control);
 ALTER TABLE utiliza ADD PRIMARY KEY (id_lote_produccion, id_lote);
 
--- 3. Definición de Foreign Keys
+-- 2. Definición de Foreign Keys
 ALTER TABLE orden_compra ADD FOREIGN KEY (id_proveedor) REFERENCES proveedor(id_proveedor);
 
 ALTER TABLE materia_prima ADD FOREIGN KEY (id_categoria) REFERENCES tipo_categoria(id_categoria);
