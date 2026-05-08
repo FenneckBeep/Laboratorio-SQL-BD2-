@@ -34,4 +34,4 @@ GRANT SELECT ON lote_materia_prima, materia_prima TO inspector;
 GRANT SELECT, INSERT ON proveedor, orden_compra, lote_materia_prima, recepcion TO compras;
 
 -- Auditor
-GRANT SELECT ON vista.lista TO auditor; 
+GRANT SELECT ON informe_2025 TO auditor;
