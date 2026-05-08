@@ -38,3 +38,92 @@ ALTER TABLE tipo_de_control ADD FOREIGN KEY (id_tipo_control) REFERENCES tipo_co
 
 ALTER TABLE utiliza ADD FOREIGN KEY (id_lote_produccion) REFERENCES lote_produccion(id_lote_produccion);
 ALTER TABLE utiliza ADD FOREIGN KEY (id_lote) REFERENCES lote_materia_prima(id_lote);
+
+-- Not Null
+
+ALTER TABLE proveedor
+ALTER COLUMN nombre SET NOT NULL;
+
+ALTER TABLE proveedor
+ALTER COLUMN pais SET NOT NULL;
+
+ALTER TABLE tipo_categoria
+ALTER COLUMN nombre SET NOT NULL;
+
+ALTER TABLE recepcion
+ALTER COLUMN fecha_recepcion SET NOT NULL;
+
+ALTER TABLE motivo_rechazo
+ALTER COLUMN descripcion SET NOT NULL;
+
+ALTER TABLE estado
+ALTER COLUMN nombre_estado SET NOT NULL;
+
+ALTER TABLE tipo_control
+ALTER COLUMN nombre SET NOT NULL;
+
+ALTER TABLE lote_produccion
+ALTER COLUMN fecha_elab SET NOT NULL;
+
+ALTER TABLE orden_compra
+ALTER COLUMN fecha SET NOT NULL;
+
+ALTER TABLE orden_compra
+ALTER COLUMN metodo_pago SET NOT NULL;
+
+ALTER TABLE orden_compra
+ALTER COLUMN total SET NOT NULL;
+
+ALTER TABLE orden_compra
+ALTER COLUMN id_proveedor SET NOT NULL;
+
+ALTER TABLE materia_prima
+ALTER COLUMN nombre SET NOT NULL;
+
+ALTER TABLE materia_prima
+ALTER COLUMN id_categoria SET NOT NULL;
+
+ALTER TABLE detalle
+ALTER COLUMN unidad_de_medida SET NOT NULL;
+
+ALTER TABLE detalle
+ALTER COLUMN cantidad SET NOT NULL;
+
+ALTER TABLE detalle
+ALTER COLUMN precio_unitario SET NOT NULL;
+
+ALTER TABLE lote_materia_prima
+ALTER COLUMN cantidad SET NOT NULL;
+
+ALTER TABLE lote_materia_prima
+ALTER COLUMN pais SET NOT NULL;
+
+ALTER TABLE lote_materia_prima
+ALTER COLUMN id_materia SET NOT NULL;
+
+ALTER TABLE lote_materia_prima
+ALTER COLUMN id_recepcion SET NOT NULL;
+
+ALTER TABLE lote_materia_prima
+ALTER COLUMN id_compra SET NOT NULL;
+
+ALTER TABLE control_de_calidad
+ALTER COLUMN hora SET NOT NULL;
+
+ALTER TABLE control_de_calidad
+ALTER COLUMN fecha SET NOT NULL;
+
+ALTER TABLE control_de_calidad
+ALTER COLUMN aprobado SET NOT NULL;
+
+ALTER TABLE control_de_calidad
+ALTER COLUMN id_tipo_control SET NOT NULL;
+
+ALTER TABLE control_de_calidad
+ALTER COLUMN id_empleado SET NOT NULL;
+
+ALTER TABLE control_de_calidad
+ALTER COLUMN id_lote SET NOT NULL;
+
+ALTER TABLE utiliza
+ALTER COLUMN cantidad SET NOT NULL;
