@@ -39,7 +39,7 @@ NATURAL JOIN orden_compra oc
 NATURAL JOIN lote_materia_prima l
 NATURAL JOIN recepcion r
 LEFT JOIN control_de_calidad c ON l.id_lote = c.id_lote
-LEFT JOIN motivo_rechazo m ON l.id_rechazo = m.id_rechazado
+LEFT JOIN motivo_rechazo m ON l.id_rechazado = m.id_rechazado
 WHERE r.fecha_recepcion >= '2025-01-01' AND r.fecha_recepcion <= '2025-12-31' AND c.aprobado = TRUE
 GROUP BY p.id_proveedor, p.nombre;
 
