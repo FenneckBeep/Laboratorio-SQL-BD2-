@@ -80,7 +80,7 @@ CREATE TABLE lote_materia_prima (
     id_materia INT,
     id_recepcion INT,
     id_compra INT,
-    id_rechazo INT
+    id_rechazado INT
 );
 
 CREATE TABLE control_de_calidad (

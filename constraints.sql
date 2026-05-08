@@ -26,7 +26,7 @@ ALTER TABLE detalle ADD FOREIGN KEY (id_materia) REFERENCES materia_prima(id_mat
 ALTER TABLE lote_materia_prima ADD FOREIGN KEY (id_materia) REFERENCES materia_prima(id_materia);
 ALTER TABLE lote_materia_prima ADD FOREIGN KEY (id_recepcion) REFERENCES recepcion(id_recepcion);
 ALTER TABLE lote_materia_prima ADD FOREIGN KEY (id_compra) REFERENCES orden_compra(id_compra);
-ALTER TABLE lote_materia_prima ADD FOREIGN KEY (id_rechazo) REFERENCES motivo_rechazo(id_rechazado);
+ALTER TABLE lote_materia_prima ADD FOREIGN KEY (id_rechazado) REFERENCES motivo_rechazo(id_rechazado);
 
 ALTER TABLE control_de_calidad ADD FOREIGN KEY (id_tipo_control) REFERENCES tipo_control(id_tipo_control);
 ALTER TABLE control_de_calidad ADD FOREIGN KEY (id_empleado) REFERENCES empleado(id_empleado);
