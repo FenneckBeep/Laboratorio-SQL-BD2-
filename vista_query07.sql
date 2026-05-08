@@ -1,5 +1,5 @@
 
-CREATE MATERIALIZED VIEW vista_resumen_proveedores_2025 AS
+CREATE MATERIALIZED VIEW informe_2025 AS
 SELECT  p.nombre AS proveedor,
         COUNT(l.id_lote) AS total_lotes_recibidos,
         COUNT(c.id_control) AS lotes_aprobados,
