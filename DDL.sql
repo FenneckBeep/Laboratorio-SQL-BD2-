@@ -1,6 +1,3 @@
-CREATE DATABASE produccion;
-
--- 1. Creación de tablas con restricciones NOT NULL integradas
 CREATE TABLE proveedor (
     id_proveedor INT,
     nombre VARCHAR(100) NOT NULL,
