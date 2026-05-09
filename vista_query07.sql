@@ -1,4 +1,3 @@
-
 CREATE MATERIALIZED VIEW informe_2025 AS
 SELECT  p.nombre AS proveedor,
         COUNT(l.id_lote) AS total_lotes_recibidos,
