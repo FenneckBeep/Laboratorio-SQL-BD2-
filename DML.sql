@@ -81,7 +81,7 @@ INSERT INTO lote_materia_prima (id_lote, cantidad, pais, estado_lote, fecha_venc
 (3003, 150, 'India', 'Rechazado', '2025-09-10', 10, 203, 603, 1),
 (3004, 40, 'Canadá', 'Aprobado', '2026-01-05', 10, 204, 604, NULL);
 (2001, 100, 'Canadá', 'Aprobado', '2026-06-01', 10, 101, 500, NULL),
-(2002, 50, 'España', 'Rechazado', '2027-01-01', 11, 102, 501, 1);
+(2002, 50, 'España', 'Rechazado', '2025-01-01', 11, 102, 501, 1);
 
 
 
