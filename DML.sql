@@ -56,7 +56,18 @@ INSERT INTO orden_compra (id_compra, fecha, metodo_pago, total, id_proveedor) VA
 INSERT INTO materia_prima (id_materia, nombre, descripcion, id_categoria) VALUES 
 (10, 'Trucha Salmonada', 'Trucha entera limpia', 1),
 (11, 'Aceite de Oliva', 'Extra virgen prensado en frío', 3),
-(12, 'Frasco de Vidrio 200g', 'Envase primario', 4);
+(12, 'Frasco de Vidrio 200g', 'Envase primario', 4),
+-- Nuevos registros solicitados (Materia Prima)
+(13, 'Salmón Rosado', 'Filete con piel premium', 1),
+(14, 'Pimienta Negra', 'Grano entero para moler', 2),
+(15, 'Aceite de Girasol', 'Refinado para fritura', 3),
+(16, 'Frasco de Vidrio 500g', 'Envase de vidrio reforzado', 4),
+(17, 'Etiquetas Autoadhesivas', 'Papel resistente a humedad', 4),
+(18, 'Merluza Hubbsi', 'Tronco de merluza sin espinas', 1),
+(19, 'Paprika Ahumada', 'Polvo fino de calidad extra', 2),
+(20, 'Caja de Cartón Máster', 'Embalaje para 24 unidades', 4),
+(21, 'Tapas de Aluminio', 'Cierre hermético 63mm', 4),
+(22, 'Cúrcuma en Polvo', 'Origen India 100% pura', 2);
 
 INSERT INTO lote_produccion (id_lote_produccion, estado_lote, fecha_elab) VALUES 
 (9001, 'Aprobado', '2026-05-05'),
@@ -90,7 +101,18 @@ INSERT INTO lote_materia_prima (id_lote, cantidad, pais, estado_lote, fecha_venc
 (4007, 300, 'Canadá', 'Rechazado', '2024-12-20', 12, 201, 601, 2),
 (4008, 75, 'España', 'Aprobado', '2027-02-28', 11, 102, 501, NULL),
 (4009, 60, 'Canadá', 'Aprobado', '2026-07-07', 10, 101, 601, NULL),
-(4010, 25, 'India', 'Rechazado', '2025-05-05', 10, 203, 603, 1);
+(4010, 25, 'India', 'Rechazado', '2025-05-05', 10, 203, 603, 1),
+-- Nuevos registros solicitados (Lote Materia Prima)
+(5001, 120, 'Canadá', 'Aprobado', '2026-10-15', 13, 101, 500, NULL),
+(5002, 30, 'India', 'Aprobado', '2027-05-20', 14, 203, 603, NULL),
+(5003, 200, 'España', 'Aprobado', '2026-12-01', 15, 202, 602, NULL),
+(5004, 500, 'Canadá', 'Observado', '2027-01-10', 16, 101, 500, NULL),
+(5005, 1000, 'Canadá', 'Aprobado', '2028-01-01', 17, 101, 500, NULL),
+(5006, 85, 'Canadá', 'Rechazado', '2025-06-15', 18, 201, 601, 1),
+(5007, 45, 'India', 'Aprobado', '2026-09-30', 19, 203, 603, NULL),
+(5008, 150, 'Canadá', 'Aprobado', '2027-03-22', 20, 101, 500, NULL),
+(5009, 3000, 'Canadá', 'Rechazado', '2026-02-15', 21, 201, 601, 2),
+(5010, 60, 'India', 'Aprobado', '2027-08-11', 22, 203, 603, NULL);
 
 -- =========================================================
 -- NIVEL 4: OPERACIONES FINALES (Controles y Uso)
