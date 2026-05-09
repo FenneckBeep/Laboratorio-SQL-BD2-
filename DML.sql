@@ -1,7 +1,3 @@
--- =========================================================
--- NIVEL 1: TABLAS MAESTRAS (Sin dependencias)
--- =========================================================
-
 INSERT INTO proveedor (id_proveedor, nombre, pais) VALUES 
 (1, 'Truchas del Norte S.A.', 'Canadá'),
 (2, 'Especias del Mundo', 'India'),
@@ -57,7 +53,6 @@ INSERT INTO materia_prima (id_materia, nombre, descripcion, id_categoria) VALUES
 (10, 'Trucha Salmonada', 'Trucha entera limpia', 1),
 (11, 'Aceite de Oliva', 'Extra virgen prensado en frío', 3),
 (12, 'Frasco de Vidrio 200g', 'Envase primario', 4),
--- Nuevos registros solicitados (Materia Prima)
 (13, 'Salmón Rosado', 'Filete con piel premium', 1),
 (14, 'Pimienta Negra', 'Grano entero para moler', 2),
 (15, 'Aceite de Girasol', 'Refinado para fritura', 3),
@@ -72,10 +67,6 @@ INSERT INTO materia_prima (id_materia, nombre, descripcion, id_categoria) VALUES
 INSERT INTO lote_produccion (id_lote_produccion, estado_lote, fecha_elab) VALUES 
 (9001, 'Aprobado', '2026-05-05'),
 (9002, 'En Proceso', '2026-05-06');
-
--- =========================================================
--- NIVEL 3: DETALLES Y LOTES (Dependen de Nivel 1 y 2)
--- =========================================================
 
 INSERT INTO detalle (id_compra, id_materia, unidad_de_medida, cantidad, precio_unitario) VALUES 
 (500, 10, 'Kg', 100, 15.00),
@@ -102,7 +93,6 @@ INSERT INTO lote_materia_prima (id_lote, cantidad, pais, estado_lote, fecha_venc
 (4008, 75, 'España', 'Aprobado', '2027-02-28', 11, 102, 501, NULL),
 (4009, 60, 'Canadá', 'Aprobado', '2026-07-07', 10, 101, 601, NULL),
 (4010, 25, 'India', 'Rechazado', '2025-05-05', 10, 203, 603, 1),
--- Nuevos registros solicitados (Lote Materia Prima)
 (5001, 120, 'Canadá', 'Aprobado', '2026-10-15', 13, 101, 500, NULL),
 (5002, 30, 'India', 'Aprobado', '2027-05-20', 14, 203, 603, NULL),
 (5003, 200, 'España', 'Aprobado', '2026-12-01', 15, 202, 602, NULL),
@@ -113,10 +103,6 @@ INSERT INTO lote_materia_prima (id_lote, cantidad, pais, estado_lote, fecha_venc
 (5008, 150, 'Canadá', 'Aprobado', '2027-03-22', 20, 101, 500, NULL),
 (5009, 3000, 'Canadá', 'Rechazado', '2026-02-15', 21, 201, 601, 2),
 (5010, 60, 'India', 'Aprobado', '2027-08-11', 22, 203, 603, NULL);
-
--- =========================================================
--- NIVEL 4: OPERACIONES FINALES (Controles y Uso)
--- =========================================================
 
 INSERT INTO control_de_calidad (id_control, unidad_de_medida, observacion, hora, fecha, aprobado, id_tipo_control, id_empleado, id_lote, id_estado) VALUES 
 (1, '°C', 'Dentro de rango', '08:00:00', '2026-05-01', TRUE, 1, 50, 2001, 1),

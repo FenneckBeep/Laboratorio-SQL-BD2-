@@ -32,3 +32,30 @@ ALTER TABLE tipo_de_control ADD FOREIGN KEY (id_materia) REFERENCES materia_prim
 ALTER TABLE tipo_de_control ADD FOREIGN KEY (id_tipo_control) REFERENCES tipo_control(id_tipo_control);
 ALTER TABLE utiliza ADD FOREIGN KEY (id_lote_produccion) REFERENCES lote_produccion(id_lote_produccion);
 ALTER TABLE utiliza ADD FOREIGN KEY (id_lote) REFERENCES lote_materia_prima(id_lote);
+
+
+-- 1. Creamos la función que contiene la lógica de validación
+CREATE OR REPLACE FUNCTION fn_check_lote_aprobado()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Verificamos si existe el lote con estado 'Aprobado'
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM lote_materia_prima 
+        WHERE id_lote = NEW.id_lote 
+          AND estado_lote = 'Aprobado'
+    ) THEN
+        -- Si no existe o no está aprobado, lanzamos la excepción
+        RAISE EXCEPTION 'El lote % no puede usarse: no existe o no tiene estado Aprobado', NEW.id_lote;
+    END IF;
+
+    -- Si todo está bien, permitimos la operación
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 2. Creamos el trigger que dispara la función antes de insertar o actualizar
+CREATE TRIGGER trg_validar_uso_lote
+BEFORE INSERT OR UPDATE ON utiliza
+FOR EACH ROW
+EXECUTE FUNCTION fn_check_lote_aprobado();
