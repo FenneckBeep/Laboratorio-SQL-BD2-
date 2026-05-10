@@ -34,7 +34,7 @@ ALTER TABLE utiliza ADD FOREIGN KEY (id_lote_produccion) REFERENCES lote_producc
 ALTER TABLE utiliza ADD FOREIGN KEY (id_lote) REFERENCES lote_materia_prima(id_lote);
 
 --Para comprobacion de aprobados en regla 9 pero no implementado por el uso de trigger
---Este trigger revisa que el lote usado en produccion siempre sea aprobado impidiendo que se ingrese un lote --observado      o    rechazado
+--Este trigger revisa que el lote usado en produccion siempre sea aprobado impidiendo que se ingrese un lote observado      o    rechazado
 CREATE OR REPLACE FUNCTION fn_check_lote_aprobado()
 RETURNS TRIGGER AS $$
 BEGIN
