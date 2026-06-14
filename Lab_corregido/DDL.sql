@@ -57,7 +57,7 @@ CREATE TABLE Lote_MateriaPrima (
 );
 
 CREATE TABLE Motivo_Rechazo (
-    ID_Rechazado INT NOT NULL,
+    ID_Rechazo INT NOT NULL,
     Descripcion_Rechazo TEXT,
     Destino VARCHAR(100)
 );
