@@ -1,0 +1,209 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// 1. área de comunicación de SQL (para capturar errores)
+EXEC SQL INCLUDE sqlca;
+
+// 2. Declaración de variables 
+EXEC SQL BEGIN DECLARE SECTION;
+    char db_target[] = "postgres@127.0.0.1:5432";
+    char db_user[] = "postgres";
+    char db_pass[] = "1234"; 
+
+    int h_id_lote;
+    char h_nom_proveedor[100];
+    varchar h_fecha_recepcion[30];
+
+    int h_id_materia_prima;
+    int h_id_tipo_control;
+    double h_valor_observed;
+    char h_unidad_medida[20];
+    char h_integridad_envase[30];
+    char h_observaciones[255];
+    
+    int h_id_funcionario;
+    char h_nom_funcionario[100];
+
+    varchar h_fecha_desde[20];
+    varchar h_fecha_hasta[20];
+    int h_cant_aprobados;
+    int h_cant_rechazados;
+    int h_cant_observados;
+EXEC SQL END DECLARE SECTION;//Fin de la parte SQL :D
+
+void listarLotesPendientes();
+void registrarControlCalidad();
+void reporteControlesEmpleado();
+
+int main() {
+    int opcion;
+
+    // Conectar con la base de datos 'lab02' con Docker
+    EXEC SQL CONNECT TO :db_target USER :db_user IDENTIFIED BY :db_pass;
+
+    //¿La conexión falló?
+    if (sqlca.sqlcode < 0) {
+        fprintf(stderr, "EXPLOTE XD: %s\n", sqlca.sqlerrm.sqlerrmc);
+        return EXIT_FAILURE;
+    }
+    
+    printf("¡VAMOS YUHUHUUU, YIPIIIII '%s'!\n", db_target);
+
+    //Menu principal
+    while (1) {
+        printf("\n============================================\n");
+        printf("- - - - - - - - - LAB 02 - - - - - - - - -\n");
+        printf("============================================\n");
+        printf("1. Listar lotes para inspeccion/reinspeccion\n");
+        printf("2. Registrar control de calidad de un lote\n"); 
+        printf("3. Reporte de controles por empleado\n");
+        printf("4. SALIR\n");
+        printf("============================================\n");
+        printf("Seleccione una opción por favor: ");
+        
+        if (scanf("%d", &opcion) != 1) {
+            printf("Por favor, ingrese un número válido.\n");
+            while (getchar() != '\n'); // Limpiar el buffer de entrada
+            continue;
+        }
+
+        //MENU CASE
+        switch (opcion) {
+            case 1:
+                listarLotesPendientes();
+                break;
+            case 2:
+                registrarControlCalidad();
+                break;
+            case 3:
+                reporteControlesEmpleado();
+                break;
+            case 4:
+                printf("Desconectando de la base de datos y saliendo del sistema 67...\n");
+                EXEC SQL DISCONNECT CURRENT;
+                return EXIT_SUCCESS;
+            default:
+                printf("Que me mandas flaco?. Intentalo de nuevo >:c.\n");
+        }
+    }
+
+    return 0;
+}
+
+// ====================================================================
+// DESARROLLO DE LAS FUNCIONES CON TU MODELO RELACIONAL
+// ====================================================================
+
+// FUNCION 1: Listar lotes para inspección o reinspección
+void listarLotesPendientes() {
+    printf("\n%-10s | %-25s | %-15s\n", "ID Lote", "Proveedor", "Fecha Recepcion");
+    printf("-----------------------------------------------------------------\n");
+
+    // Cursor uniendo las tablas lote -> recepcion -> proveedor de tu papel
+    EXEC SQL DECLARE cursor_lotes CURSOR FOR 
+        SELECT l.id_lote, p.nombre, l.fecha_recepcion 
+        FROM lote l
+        JOIN recepcion r ON l.id_recepcion = r.id_recepcion
+        JOIN proveedor p ON r.id_proveedor = p.id_proveedor
+        WHERE l.estado = 'Pendiente' OR l.estado = 'Observado'
+        ORDER BY l.fecha_recepcion ASC;
+
+    EXEC SQL OPEN cursor_lotes;
+
+    if (sqlca.sqlcode < 0) {
+        printf("Error al abrir listado: %s\n", sqlca.sqlerrm.sqlerrmc);
+        return;
+    }
+
+    while (1) {
+        EXEC SQL FETCH cursor_lotes INTO :h_id_lote, :h_nom_proveedor, :h_fecha_recepcion;
+
+        if (sqlca.sqlcode == 100) break; // Fin de los datos
+        if (sqlca.sqlcode < 0) {
+            printf("Error leyendo filas: %s\n", sqlca.sqlerrm.sqlerrmc);
+            break;
+        }
+
+        printf("%-10d | %-25s | %-15s\n", h_id_lote, h_nom_proveedor, h_fecha_recepcion);
+    }
+
+    EXEC SQL CLOSE cursor_lotes;
+}
+
+// FUNCION 2: Registrar control de calidad de un lote
+void registrarControlCalidad() {
+    printf("\n--- Registrar Nuevo Control de Calidad ---\n");
+    
+    // Cambiar h_ins_id_lote por h_id_lote
+    printf("ID del Lote: "); scanf("%d", &h_id_lote);
+    printf("Fecha y Hora (YYYY-MM-DD HH:MM): "); scanf(" %[^\n]", h_fecha_recepcion.arr); // Usamos la misma variable de fecha declarada
+    printf("ID Materia Prima: "); scanf("%d", &h_id_materia_prima);
+    printf("ID Tipo de Control: "); scanf("%d", &h_id_tipo_control);
+    printf("Valor Observado: "); scanf("%lf", &h_valor_observed);
+    printf("Unidad de Medida: "); scanf("%s", h_unidad_medida);
+    printf("Integridad del Envase (excelente/normal/danos/inaceptable): "); scanf("%s", h_integridad_envase);
+    printf("Observaciones: "); scanf(" %[^\n]", h_observaciones);
+    printf("ID Funcionario: "); scanf("%d", &h_id_funcionario);
+
+    // Cambiar las variables dentro del INSERT para usar las unificadas
+    EXEC SQL INSERT INTO control_calidad (
+        id_lote, fecha_hora, id_materia_prima, id_tipo_control, 
+        valor_observado, unidad_medida, integridad_envase, observaciones, id_funcionario
+    ) VALUES (
+        :h_id_lote, :h_fecha_recepcion, :h_id_materia_prima, :h_id_tipo_control, 
+        :h_valor_observed, :h_unidad_medida, :h_integridad_envase, :h_observaciones, :h_id_funcionario
+    );
+
+    if (sqlca.sqlcode < 0) {
+        printf("Error al registrar: %s\n", sqlca.sqlerrm.sqlerrmc);
+        EXEC SQL ROLLBACK;
+    } else {
+        printf("¡Control de calidad guardado con éxito!\n");
+        EXEC SQL COMMIT;
+    }
+}
+
+// FUNCION 3: Reporte de controles por empleado en rango de fechas
+void reporteControlesEmpleado() {
+    printf("\n--- Reporte de Controles por Funcionario ---\n");
+    printf("Fecha de Inicio (YYYY-MM-DD): "); scanf("%s", h_fecha_desde);
+    printf("Fecha de Fin (YYYY-MM-DD): "); scanf("%s", h_fecha_hasta);
+
+    printf("\n%-25s | %-10s | %-10s | %-10s\n", "Funcionario", "Aprobados", "Rechazados", "Observados");
+    printf("------------------------------------------------------------------------\n");
+
+    // Consulta agregada usando condicionales sobre la tabla control_calidad y funcionario
+    EXEC SQL DECLARE cursor_reporte CURSOR FOR
+        SELECT f.id_funcionario, f.nombre,
+               COUNT(CASE WHEN c.estado = 'Aprobado' THEN 1 END),
+               COUNT(CASE WHEN c.estado = 'Rechazado' THEN 1 END),
+               COUNT(CASE WHEN c.estado = 'Observado' THEN 1 END)
+        FROM funcionario f
+        JOIN control_calidad c ON f.id_funcionario = c.id_funcionario
+        WHERE c.fecha_hora BETWEEN :h_fecha_desde AND :h_fecha_hasta
+        GROUP BY f.id_funcionario, f.nombre
+        ORDER BY f.nombre ASC;
+
+    EXEC SQL OPEN cursor_reporte;
+
+    if (sqlca.sqlcode < 0) {
+        printf("Error al generar reporte: %s\n", sqlca.sqlerrm.sqlerrmc);
+        return;
+    }
+
+    while (1) {
+        EXEC SQL FETCH cursor_reporte INTO :h_id_funcionario, :h_nom_funcionario, 
+                                   :h_cant_aprobados, :h_cant_rechazados, :h_cant_observados;
+                                   
+        if (sqlca.sqlcode == 100) break;
+        if (sqlca.sqlcode < 0) {
+            printf("Error a mitad del reporte: %s\n", sqlca.sqlerrm.sqlerrmc);
+            break;
+        }
+
+       printf("%-25s | %-10d | %-10d | %-10d\n", h_nom_funcionario, h_cant_aprobados, h_cant_rechazados, h_cant_observados);
+    }
+
+    EXEC SQL CLOSE cursor_reporte;
+}

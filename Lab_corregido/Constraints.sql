@@ -7,7 +7,7 @@ ALTER TABLE Materia_Prima ADD CONSTRAINT PK_Materia_Prima PRIMARY KEY (ID_Materi
 ALTER TABLE Detalle ADD CONSTRAINT PK_Detalle PRIMARY KEY (ID_Compra, ID_Materia);
 ALTER TABLE Recepcion ADD CONSTRAINT PK_Recepcion PRIMARY KEY (ID_Recepcion);
 ALTER TABLE Lote_MateriaPrima ADD CONSTRAINT PK_Lote_MateriaPrima PRIMARY KEY (ID_Lote);
-ALTER TABLE Motivo_Rechazo ADD CONSTRAINT PK_Motivo_Rechazo PRIMARY KEY (ID_Rechazado);
+ALTER TABLE Motivo_Rechazo ADD CONSTRAINT PK_Motivo_Rechazo PRIMARY KEY (ID_Rechazo);
 ALTER TABLE Empleado ADD CONSTRAINT PK_Empleado PRIMARY KEY (ID_Empleado);
 ALTER TABLE Estado ADD CONSTRAINT PK_Estado PRIMARY KEY (ID_Estado);
 ALTER TABLE Tipo_Control ADD CONSTRAINT PK_Tipo_Control PRIMARY KEY (ID_TipoControl);
@@ -37,7 +37,7 @@ ALTER TABLE Control_De_Calidad ADD CONSTRAINT FK_Control_TipoControl FOREIGN KEY
 ALTER TABLE Control_De_Calidad ADD CONSTRAINT FK_Control_Empleado FOREIGN KEY (ID_Empleado) REFERENCES Empleado(ID_Empleado);
 ALTER TABLE Control_De_Calidad ADD CONSTRAINT FK_Control_Lote FOREIGN KEY (ID_Lote) REFERENCES Lote_MateriaPrima(ID_Lote);
 ALTER TABLE Control_De_Calidad ADD CONSTRAINT FK_Control_Estado FOREIGN KEY (ID_Estado) REFERENCES Estado(ID_Estado);
-ALTER TABLE Control_De_Calidad ADD CONSTRAINT FK_Control_Rechazo FOREIGN KEY (ID_Rechazo) REFERENCES Motivo_Rechazo(ID_Rechazado);
+ALTER TABLE Control_De_Calidad ADD CONSTRAINT FK_Control_Rechazo FOREIGN KEY (ID_Rechazo) REFERENCES Motivo_Rechazo(ID_Rechazo);
 
 ALTER TABLE Utiliza ADD CONSTRAINT FK_Utiliza_LoteProduccion FOREIGN KEY (ID_Lote_Produccion) REFERENCES Lote_Produccion(ID_Lote_Produccion);
 ALTER TABLE Utiliza ADD CONSTRAINT FK_Utiliza_LoteMP FOREIGN KEY (ID_Lote) REFERENCES Lote_MateriaPrima(ID_Lote);

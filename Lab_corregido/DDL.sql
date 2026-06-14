@@ -43,7 +43,6 @@ CREATE TABLE Detalle (
 
 CREATE TABLE Recepcion (
     ID_Recepcion INT NOT NULL,
-    Tipo VARCHAR(50),
     Fecha_Recepcion DATE
 );
 
@@ -57,7 +56,7 @@ CREATE TABLE Lote_MateriaPrima (
 );
 
 CREATE TABLE Motivo_Rechazo (
-    ID_Rechazado INT NOT NULL,
+    ID_Rechazo INT NOT NULL,
     Descripcion_Rechazo TEXT,
     Destino VARCHAR(100)
 );
@@ -65,9 +64,9 @@ CREATE TABLE Motivo_Rechazo (
 CREATE TABLE Empleado (
     ID_Empleado INT NOT NULL,
     Nombre1 VARCHAR(50),
-    nombre2 VARCHAR(50),
-    apellido1 VARCHAR(50),
-    apellido2 VARCHAR(50)
+    Nombre2 VARCHAR(50),
+    Apellido1 VARCHAR(50),
+    Apellido2 VARCHAR(50)
 );
 
 CREATE TABLE Estado (
@@ -90,7 +89,7 @@ CREATE TABLE Cualitativo (
 );
 
 CREATE TABLE Control_De_Calidad (
-    ID_control INT NOT NULL,
+    ID_Control INT NOT NULL,
     Descripcion TEXT,
     Hora TIME,
     fecha DATE,
