@@ -43,7 +43,6 @@ CREATE TABLE Detalle (
 
 CREATE TABLE Recepcion (
     ID_Recepcion INT NOT NULL,
-    Tipo VARCHAR(50),
     Fecha_Recepcion DATE
 );
 
