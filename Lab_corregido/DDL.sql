@@ -64,9 +64,9 @@ CREATE TABLE Motivo_Rechazo (
 CREATE TABLE Empleado (
     ID_Empleado INT NOT NULL,
     Nombre1 VARCHAR(50),
-    nombre2 VARCHAR(50),
-    apellido1 VARCHAR(50),
-    apellido2 VARCHAR(50)
+    Nombre2 VARCHAR(50),
+    Apellido1 VARCHAR(50),
+    Apellido2 VARCHAR(50)
 );
 
 CREATE TABLE Estado (
