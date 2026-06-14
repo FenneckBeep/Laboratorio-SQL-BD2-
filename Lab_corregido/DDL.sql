@@ -89,7 +89,7 @@ CREATE TABLE Cualitativo (
 );
 
 CREATE TABLE Control_De_Calidad (
-    ID_control INT NOT NULL,
+    ID_Control INT NOT NULL,
     Descripcion TEXT,
     Hora TIME,
     fecha DATE,
