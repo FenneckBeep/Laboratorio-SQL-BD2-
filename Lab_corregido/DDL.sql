@@ -104,7 +104,6 @@ CREATE TABLE Control_De_Calidad (
 
 CREATE TABLE Lote_Produccion (
     ID_Lote_Produccion INT NOT NULL,
-    Estado_Lote VARCHAR(50),
     Fecha_Elab DATE
 );
 

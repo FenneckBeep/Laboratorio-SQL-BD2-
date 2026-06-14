@@ -50,9 +50,9 @@ RETURNS TRIGGER AS $$
 BEGIN
     IF NOT EXISTS (
         SELECT 1 
-        FROM lote_materia_prima 
-        WHERE id_lote = NEW.id_lote 
-          AND estado_lote = 'Aprobado'
+        FROM lote_materia_prima lp, control_de_calidad c
+        WHERE lp.id_lote = NEW.id_lote 
+          AND c.id_estado = 1
     ) THEN
         RAISE EXCEPTION 'El lote % no puede usarse: no existe o no tiene estado Aprobado', NEW.id_lote;
     END IF;
