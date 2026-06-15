@@ -46,7 +46,7 @@ CREATE TABLE Recepcion (
     Fecha_Recepcion DATE
 );
 
-CREATE TABLE Lote_MateriaPrima (
+CREATE TABLE Lote_Materia_Prima (
     ID_Lote INT NOT NULL,
     Cantidad INT,
     Fecha_Vencimiento DATE,

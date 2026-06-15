@@ -6,7 +6,7 @@ ALTER TABLE Tipo_Categoria ADD CONSTRAINT PK_Tipo_Categoria PRIMARY KEY (ID_Cate
 ALTER TABLE Materia_Prima ADD CONSTRAINT PK_Materia_Prima PRIMARY KEY (ID_Materia);
 ALTER TABLE Detalle ADD CONSTRAINT PK_Detalle PRIMARY KEY (ID_Compra, ID_Materia);
 ALTER TABLE Recepcion ADD CONSTRAINT PK_Recepcion PRIMARY KEY (ID_Recepcion);
-ALTER TABLE Lote_MateriaPrima ADD CONSTRAINT PK_Lote_MateriaPrima PRIMARY KEY (ID_Lote);
+ALTER TABLE Lote_Materia_Prima ADD CONSTRAINT PK_Lote_MateriaPrima PRIMARY KEY (ID_Lote);
 ALTER TABLE Motivo_Rechazo ADD CONSTRAINT PK_Motivo_Rechazo PRIMARY KEY (ID_Rechazo);
 ALTER TABLE Empleado ADD CONSTRAINT PK_Empleado PRIMARY KEY (ID_Empleado);
 ALTER TABLE Estado ADD CONSTRAINT PK_Estado PRIMARY KEY (ID_Estado);
@@ -26,32 +26,32 @@ ALTER TABLE Materia_Prima ADD CONSTRAINT FK_MateriaPrima_Categoria FOREIGN KEY (
 ALTER TABLE Detalle ADD CONSTRAINT FK_Detalle_Compra FOREIGN KEY (ID_Compra) REFERENCES Orden_Compra(ID_Compra);
 ALTER TABLE Detalle ADD CONSTRAINT FK_Detalle_Materia FOREIGN KEY (ID_Materia) REFERENCES Materia_Prima(ID_Materia);
 
-ALTER TABLE Lote_MateriaPrima ADD CONSTRAINT FK_LoteMP_Materia FOREIGN KEY (ID_Materia) REFERENCES Materia_Prima(ID_Materia);
-ALTER TABLE Lote_MateriaPrima ADD CONSTRAINT FK_LoteMP_Recepcion FOREIGN KEY (ID_Recepcion) REFERENCES Recepcion(ID_Recepcion);
-ALTER TABLE Lote_MateriaPrima ADD CONSTRAINT FK_LoteMP_Compra FOREIGN KEY (ID_Compra) REFERENCES Orden_Compra(ID_Compra);
+ALTER TABLE Lote_Materia_Prima ADD CONSTRAINT FK_LoteMP_Materia FOREIGN KEY (ID_Materia) REFERENCES Materia_Prima(ID_Materia);
+ALTER TABLE Lote_Materia_Prima ADD CONSTRAINT FK_LoteMP_Recepcion FOREIGN KEY (ID_Recepcion) REFERENCES Recepcion(ID_Recepcion);
+ALTER TABLE Lote_Materia_Prima ADD CONSTRAINT FK_LoteMP_Compra FOREIGN KEY (ID_Compra) REFERENCES Orden_Compra(ID_Compra);
 
 ALTER TABLE Cuantitativo ADD CONSTRAINT FK_Cuantitativo_TipoControl FOREIGN KEY (ID_TipoControl) REFERENCES Tipo_Control(ID_TipoControl);
 ALTER TABLE Cualitativo ADD CONSTRAINT FK_Cualitativo_TipoControl FOREIGN KEY (ID_TipoControl) REFERENCES Tipo_Control(ID_TipoControl);
 
 ALTER TABLE Control_De_Calidad ADD CONSTRAINT FK_Control_TipoControl FOREIGN KEY (ID_TipoControl) REFERENCES Tipo_Control(ID_TipoControl);
 ALTER TABLE Control_De_Calidad ADD CONSTRAINT FK_Control_Empleado FOREIGN KEY (ID_Empleado) REFERENCES Empleado(ID_Empleado);
-ALTER TABLE Control_De_Calidad ADD CONSTRAINT FK_Control_Lote FOREIGN KEY (ID_Lote) REFERENCES Lote_MateriaPrima(ID_Lote);
+ALTER TABLE Control_De_Calidad ADD CONSTRAINT FK_Control_Lote FOREIGN KEY (ID_Lote) REFERENCES Lote_Materia_Prima(ID_Lote);
 ALTER TABLE Control_De_Calidad ADD CONSTRAINT FK_Control_Estado FOREIGN KEY (ID_Estado) REFERENCES Estado(ID_Estado);
 ALTER TABLE Control_De_Calidad ADD CONSTRAINT FK_Control_Rechazo FOREIGN KEY (ID_Rechazo) REFERENCES Motivo_Rechazo(ID_Rechazo);
 
 ALTER TABLE Utiliza ADD CONSTRAINT FK_Utiliza_LoteProduccion FOREIGN KEY (ID_Lote_Produccion) REFERENCES Lote_Produccion(ID_Lote_Produccion);
-ALTER TABLE Utiliza ADD CONSTRAINT FK_Utiliza_LoteMP FOREIGN KEY (ID_Lote) REFERENCES Lote_MateriaPrima(ID_Lote);
+ALTER TABLE Utiliza ADD CONSTRAINT FK_Utiliza_LoteMP FOREIGN KEY (ID_Lote) REFERENCES Lote_Materia_Prima(ID_Lote);
 
 ALTER TABLE Tiene ADD CONSTRAINT FK_Tiene_Control FOREIGN KEY (ID_Control) REFERENCES Control_De_Calidad(ID_control);
-ALTER TABLE Tiene ADD CONSTRAINT FK_Tiene_Lote FOREIGN KEY (ID_Lote) REFERENCES Lote_MateriaPrima(ID_Lote);
+ALTER TABLE Tiene ADD CONSTRAINT FK_Tiene_Lote FOREIGN KEY (ID_Lote) REFERENCES Lote_Materia_Prima(ID_Lote);
 
 CREATE OR REPLACE FUNCTION fn_check_lote_aprobado()
 RETURNS TRIGGER AS $$
 BEGIN
     IF NOT EXISTS (
         SELECT 1 
-        FROM lote_materia_prima lp, control_de_calidad c
-        WHERE lp.id_lote = NEW.id_lote 
+        FROM lote_materia_prima lp, utiliza u, control_de_calidad c
+        WHERE lp.id_lote = NEW.id_lote and
           AND c.id_estado = 1
     ) THEN
         RAISE EXCEPTION 'El lote % no puede usarse: no existe o no tiene estado Aprobado', NEW.id_lote;
