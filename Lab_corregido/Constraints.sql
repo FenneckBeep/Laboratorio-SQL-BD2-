@@ -49,12 +49,13 @@ CREATE OR REPLACE FUNCTION fn_check_lote_aprobado()
 RETURNS TRIGGER AS $$
 BEGIN
     IF NOT EXISTS (
-        SELECT 1 
-        FROM lote_materia_prima lp, utiliza u, control_de_calidad c
-        WHERE lp.id_lote = NEW.id_lote and
-          AND c.id_estado = 1
+        SELECT 1
+        FROM Control_De_Calidad c
+        WHERE c.ID_Lote = NEW.ID_Lote
+          AND c.ID_Estado = 1
     ) THEN
-        RAISE EXCEPTION 'El lote % no puede usarse: no existe o no tiene estado Aprobado', NEW.id_lote;
+        RAISE EXCEPTION
+        'El lote % no está aprobado', NEW.ID_Lote;
     END IF;
 
     RETURN NEW;
