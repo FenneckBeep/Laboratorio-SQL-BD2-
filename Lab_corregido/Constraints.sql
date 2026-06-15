@@ -13,7 +13,7 @@ ALTER TABLE Estado ADD CONSTRAINT PK_Estado PRIMARY KEY (ID_Estado);
 ALTER TABLE Tipo_Control ADD CONSTRAINT PK_Tipo_Control PRIMARY KEY (ID_TipoControl);
 ALTER TABLE Cuantitativo ADD CONSTRAINT PK_Cuantitativo PRIMARY KEY (ID_TipoControl);
 ALTER TABLE Cualitativo ADD CONSTRAINT PK_Cualitativo PRIMARY KEY (ID_TipoControl);
-ALTER TABLE Control_De_Calidad ADD CONSTRAINT PK_Control_De_Calidad PRIMARY KEY (ID_control);
+ALTER TABLE Control_De_Calidad ADD CONSTRAINT PK_Control_De_Calidad PRIMARY KEY (ID_Control);
 ALTER TABLE Lote_Produccion ADD CONSTRAINT PK_Lote_Produccion PRIMARY KEY (ID_Lote_Produccion);
 ALTER TABLE Utiliza ADD CONSTRAINT PK_Utiliza PRIMARY KEY (ID_Lote_Produccion, ID_Lote);
 ALTER TABLE Tiene ADD CONSTRAINT PK_Tiene PRIMARY KEY (ID_Control, ID_Lote);
@@ -42,7 +42,7 @@ ALTER TABLE Control_De_Calidad ADD CONSTRAINT FK_Control_Rechazo FOREIGN KEY (ID
 ALTER TABLE Utiliza ADD CONSTRAINT FK_Utiliza_LoteProduccion FOREIGN KEY (ID_Lote_Produccion) REFERENCES Lote_Produccion(ID_Lote_Produccion);
 ALTER TABLE Utiliza ADD CONSTRAINT FK_Utiliza_LoteMP FOREIGN KEY (ID_Lote) REFERENCES Lote_Materia_Prima(ID_Lote);
 
-ALTER TABLE Tiene ADD CONSTRAINT FK_Tiene_Control FOREIGN KEY (ID_Control) REFERENCES Control_De_Calidad(ID_control);
+ALTER TABLE Tiene ADD CONSTRAINT FK_Tiene_Control FOREIGN KEY (ID_Control) REFERENCES Control_De_Calidad(ID_Control);
 ALTER TABLE Tiene ADD CONSTRAINT FK_Tiene_Lote FOREIGN KEY (ID_Lote) REFERENCES Lote_Materia_Prima(ID_Lote);
 
 CREATE OR REPLACE FUNCTION fn_check_lote_aprobado()
