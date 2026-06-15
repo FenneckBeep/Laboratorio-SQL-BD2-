@@ -45,6 +45,8 @@ ALTER TABLE Utiliza ADD CONSTRAINT FK_Utiliza_LoteMP FOREIGN KEY (ID_Lote) REFER
 ALTER TABLE Tiene ADD CONSTRAINT FK_Tiene_Control FOREIGN KEY (ID_Control) REFERENCES Control_De_Calidad(ID_Control);
 ALTER TABLE Tiene ADD CONSTRAINT FK_Tiene_Lote FOREIGN KEY (ID_Lote) REFERENCES Lote_Materia_Prima(ID_Lote);
 
+------------------------TRIGGER (Lote_Aprobado)------------------------
+-----------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION fn_check_lote_aprobado()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -61,6 +63,7 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+---------------| Aprobado(1)| Observado(2) | Rechazado(3)| --------------
 
 CREATE TRIGGER trg_validar_uso_lote
 BEFORE INSERT OR UPDATE ON utiliza
