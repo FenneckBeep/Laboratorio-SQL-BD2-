@@ -183,3 +183,29 @@ INSERT INTO Control_De_Calidad VALUES
 
 INSERT INTO Tiene VALUES
 (310, 9008);
+
+INSERT INTO Recepcion VALUES (109, '2025-06-25');
+
+INSERT INTO Orden_Compra VALUES
+(509, '2025-06-24', 1, 3);
+
+INSERT INTO Detalle VALUES
+(509, 1002, 20, 20, 250);
+
+INSERT INTO Lote_Materia_Prima VALUES
+(9009, 20, '2025-12-31', 1002, 109, 509);
+
+INSERT INTO Control_De_Calidad VALUES
+(311,
+ 'Lote en cuarentena por resultado dudoso',
+ '09:30:00',
+ '2025-06-25',
+ 'Pendiente',
+ 4,
+ 10,
+ 9009,
+ 2,
+ NULL);
+
+INSERT INTO Tiene VALUES
+(311, 9009);
