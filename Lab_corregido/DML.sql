@@ -162,3 +162,24 @@ INSERT INTO Utiliza (ID_Lote_Produccion, ID_Lote, Cant) VALUES
 (8001, 9001, 2500),
 (8003, 9005, 600),
 (8004, 9007, 750);
+
+
+INSERT INTO Recepcion VALUES
+(108, '2025-06-20');
+
+INSERT INTO Orden_Compra VALUES
+(508, '2025-06-19', 3, 2);
+
+INSERT INTO Detalle VALUES
+(508, 1003, 300, 2000, 300);
+
+INSERT INTO Lote_Materia_Prima VALUES
+(9008, 2000, '2026-06-20', 1003, 108, 508);
+
+INSERT INTO Control_De_Calidad VALUES
+(310, 'Botellas con sellado defectuoso',
+ '12:00:00', '2025-06-20',
+ 'Defectuoso', 3, 30, 9008, 3, 2);
+
+INSERT INTO Tiene VALUES
+(310, 9008);
