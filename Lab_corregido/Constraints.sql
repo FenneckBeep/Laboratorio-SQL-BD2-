@@ -64,7 +64,7 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-}
+
 
 /* Estado:
    1 = Aprobado
