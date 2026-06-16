@@ -12,4 +12,4 @@ JOIN Detalle d
     ON oc.ID_Compra = d.ID_Compra
 WHERE oc.Fecha BETWEEN '2025-01-01' AND '2025-12-31'
 GROUP BY p.ID_Proveedor, p.Nombre, m.Nombre_Moneda
-ORDER BY total_comprado DESC;
+ORDER BY p.ID_Proveedor;
