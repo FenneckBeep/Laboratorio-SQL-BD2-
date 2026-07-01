@@ -45,6 +45,22 @@ ALTER TABLE Utiliza ADD CONSTRAINT FK_Utiliza_LoteMP FOREIGN KEY (ID_Lote) REFER
 ALTER TABLE Tiene ADD CONSTRAINT FK_Tiene_Control FOREIGN KEY (ID_Control) REFERENCES Control_De_Calidad(ID_Control);
 ALTER TABLE Tiene ADD CONSTRAINT FK_Tiene_Lote FOREIGN KEY (ID_Lote) REFERENCES Lote_Materia_Prima(ID_Lote);
 
+
+-- PK y FK de Umbral_Control
+ALTER TABLE Umbral_Control
+    ADD CONSTRAINT PK_Umbral_Control
+    PRIMARY KEY (ID_Materia, ID_TipoControl);
+
+ALTER TABLE Umbral_Control
+    ADD CONSTRAINT FK_UmbralControl_Materia
+    FOREIGN KEY (ID_Materia)
+    REFERENCES Materia_Prima(ID_Materia);
+
+ALTER TABLE Umbral_Control
+    ADD CONSTRAINT FK_UmbralControl_TipoControl
+    FOREIGN KEY (ID_TipoControl)
+    REFERENCES Tipo_Control(ID_TipoControl);
+
 -- ============================================================================
 -- TRIGGER: Lote a Lote_produccion debe ser un Lote Aprobado 
 -- ============================================================================
@@ -76,3 +92,186 @@ CREATE TRIGGER trg_validar_uso_lote
 BEFORE INSERT OR UPDATE ON utiliza
 FOR EACH ROW
 EXECUTE FUNCTION fn_check_lote_aprobado();
+
+-- 
+-- FUNCION: fn_calcular_estado_lote
+--
+-- Recibe: id_lote, id_tipo_control, valor_medido (como texto)
+-- Retorna: INTEGER y esto puede retornar
+--   1 = Aprobado
+--   2 = Observado 
+--   3 = Rechazado
+--
+
+--  - Si el tipo de control es CUANTITATIVO:
+--       * Se intenta convertir valor_medido a numero
+--       * Se compara con Umbral_Control para la materia prima del lote
+--       * Si no hay umbral definido, devuelve Observado (2) por precaucion y porque me da la gana
+--  - Si el tipo de control es CUALITATIVO:
+--       * Si el valor es 'Conforme' o 'Negativo' -> Aprobado (1)
+--       * Si el valor es 'Defectuoso' o esta en la 'Miseria (como Mexico)' -> Rechazado (3)
+--       * Por cualquier otro cosa va -> Observado/enrevision (2)
+-- 
+
+CREATE OR REPLACE FUNCTION fn_calcular_estado_lote(
+    p_id_lote        INT,
+    p_id_tipocontrol INT,
+    p_valor_medido   VARCHAR
+)
+RETURNS INTEGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_id_materia   INT;
+    v_val_min      NUMERIC(10,4);
+    v_val_max      NUMERIC(10,4);
+    v_valor_num    NUMERIC(10,4);
+    v_margen       NUMERIC(10,4);
+    v_es_cuant     BOOLEAN;
+BEGIN
+    -- Obtener la materia prima del lote
+    SELECT id_materia INTO v_id_materia
+    FROM lote_materia_prima
+    WHERE id_lote = p_id_lote;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'El lote % no existe', p_id_lote;
+    END IF;
+
+    -- Verificar si el tipo de control es cuantitativo
+    SELECT EXISTS (
+        SELECT 1 FROM cuantitativo WHERE id_tipocontrol = p_id_tipocontrol
+    ) INTO v_es_cuant;
+
+    -- -------------------------------------------------------
+    -- CONTROL CUANTITATIVO
+    -- -------------------------------------------------------
+    IF v_es_cuant THEN
+
+        -- Intentar convertir el valor a numero
+        BEGIN
+            -- Quitar posibles sufijos como '%' o letras
+            v_valor_num := REGEXP_REPLACE(p_valor_medido, '[^0-9\.\-]', '', 'g')::NUMERIC(10,4);
+        EXCEPTION WHEN OTHERS THEN
+            -- No se pudo convertir -> Observado
+            RETURN 2;
+        END;
+
+        -- Buscar umbral para esta materia prima y tipo de control
+        SELECT valor_min, valor_max
+        INTO v_val_min, v_val_max
+        FROM umbral_control
+        WHERE id_materia    = v_id_materia
+          AND id_tipocontrol = p_id_tipocontrol;
+
+        IF NOT FOUND THEN
+            -- Sin umbral definido -> Observado por precaucion
+            RETURN 2;
+        END IF;
+
+        -- Calcular margen del 10% del rango para zona "observada"
+        v_margen := (v_val_max - v_val_min) * 0.10;
+
+        -- Fuera del rango -> Rechazado
+        IF v_valor_num < v_val_min OR v_valor_num > v_val_max THEN
+            -- Dentro de la zona limítrofe (10% del margen) -> Observado
+            IF v_valor_num >= (v_val_min - v_margen) AND v_valor_num <= (v_val_max + v_margen) THEN
+                RETURN 2; -- Observado
+            ELSE
+                RETURN 3; -- Rechazado
+            END IF;
+        ELSE
+            RETURN 1; -- Aprobado
+        END IF;
+
+    -- -------------------------------------------------------
+    -- CONTROL CUALITATIVO
+    -- -------------------------------------------------------
+    ELSE
+        IF UPPER(TRIM(p_valor_medido)) IN ('CONFORME', 'NEGATIVO', 'APROBADO', 'OK') THEN
+            RETURN 1; -- Aprobado
+        ELSIF UPPER(TRIM(p_valor_medido)) IN ('DEFECTUOSO', 'INACEPTABLE', 'POSITIVO', 'RECHAZADO') THEN
+            RETURN 3; -- Rechazado
+        ELSE
+            RETURN 2; -- Observado / Pendiente
+        END IF;
+    END IF;
+
+END;
+$$;
+
+-- ============================================================
+-- TRIGGER: Verificar que lote en produccion este Aprobado
+-- (ya existia en el lab 1, se mantiene / actualiza)
+-- ============================================================
+
+CREATE OR REPLACE FUNCTION fn_check_lote_aprobado()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Verificar que el ultimo estado del lote sea Aprobado (1)
+    IF NOT EXISTS (
+        SELECT 1
+        FROM control_de_calidad c
+        WHERE c.id_lote = NEW.id_lote
+          AND c.id_estado = 1
+          AND c.id_control = (
+              SELECT MAX(c2.id_control)
+              FROM control_de_calidad c2
+              WHERE c2.id_lote = NEW.id_lote
+          )
+    ) THEN
+        RAISE EXCEPTION
+            'El lote % no esta en estado Aprobado. No puede ser usado en produccion.',
+            NEW.id_lote;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_validar_uso_lote
+BEFORE INSERT OR UPDATE ON utiliza
+FOR EACH ROW
+EXECUTE FUNCTION fn_check_lote_aprobado();
+
+CREATE OR REPLACE PROCEDURE sp_registrar_control(
+    p_id_lote          INT,
+    p_fecha            DATE,
+    p_hora             TIME,
+    p_id_tipocontrol   INT,
+    p_id_empleado      INT,
+    p_valor_medido     VARCHAR,
+    p_descripcion      TEXT,
+    OUT p_id_control   INT,
+    OUT p_estado       INT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_nuevo_id   INT;
+    v_estado     INT;
+    v_id_rechazo INT := NULL;
+BEGIN
+    -- Calcular estado
+    v_estado := fn_calcular_estado_lote(p_id_lote, p_id_tipocontrol, p_valor_medido);
+
+    -- Obtener siguiente ID
+    SELECT COALESCE(MAX(id_control), 0) + 1
+    INTO v_nuevo_id
+    FROM control_de_calidad;
+
+    -- Insertar control
+    INSERT INTO control_de_calidad
+        (id_control, descripcion, hora, fecha, valor_medido,
+         id_tipocontrol, id_empleado, id_lote, id_estado, id_rechazo)
+    VALUES
+        (v_nuevo_id, p_descripcion, p_hora, p_fecha, p_valor_medido,
+         p_id_tipocontrol, p_id_empleado, p_id_lote, v_estado, v_id_rechazo);
+
+    -- Insertar en tabla TIENE
+    INSERT INTO tiene (id_control, id_lote)
+    VALUES (v_nuevo_id, p_id_lote);
+
+    p_id_control := v_nuevo_id;
+    p_estado     := v_estado;
+END;
+$$;

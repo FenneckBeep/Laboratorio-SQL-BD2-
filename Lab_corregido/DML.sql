@@ -229,3 +229,13 @@ INSERT INTO Utiliza (ID_Lote_Produccion, ID_Lote, Cant) VALUES
 (8001, 9001, 2500),
 (8003, 9005, 600),
 (8004, 9007, 750);
+
+--Dato de prueba Umbral Control: Leche Entera Pasteurizada (1001) - pH (1): rango 6.4 a 6.8
+INSERT INTO Umbral_Control (ID_Materia, ID_TipoControl, Valor_Min, Valor_Max)
+VALUES (1001, 1, 6.4, 6.8);
+
+-- Fermento Láctico en Polvo (1002) - Humedad (2): máximo 5%
+INSERT INTO Umbral_Control (ID_Materia, ID_TipoControl, Valor_Min, Valor_Max)
+VALUES (1002, 2, 0.0, 5.0);
+
+-- Botella PET (1003) es cualitativo, no tiene umbral numérico → no va acá

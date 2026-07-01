@@ -117,3 +117,11 @@ CREATE TABLE Tiene (
     ID_Lote INT NOT NULL
 );
 
+/*Almacena el rango mínimo y máximo aceptable para cada
+combinación de materia prima y tipo de control cuantitativo*/
+CREATE TABLE Umbral_Control (
+    ID_Materia      INT          NOT NULL,
+    ID_TipoControl  INT          NOT NULL,
+    Valor_Min       NUMERIC(10,4) NOT NULL,
+    Valor_Max       NUMERIC(10,4) NOT NULL
+);
