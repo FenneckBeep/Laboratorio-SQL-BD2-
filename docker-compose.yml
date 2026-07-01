@@ -1,0 +1,20 @@
+services:
+  db_postgres:
+    image: postgres:17-bookworm
+    container_name: postgres_produccion
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "1234"
+      POSTGRES_DB: produccion
+    ports:
+      - "5435:5432"  # <-- Cambiado aquí. Windows usará el 5435, Docker el 5432 internamente.
+    volumes:
+      - ./Lab_corregido:/docker-entrypoint-initdb.d 
+
+  app_calidad:
+    build: ./Lab_C
+    container_name: programa_calidad_app
+    depends_on:
+      - db_postgres
+    stdin_open: true
+    tty: true
