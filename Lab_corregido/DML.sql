@@ -166,7 +166,7 @@ VALUES
  3, 20, 9002, 1, NULL),
 
 (303, 'Control de humedad superó el límite crítico del 5%',
- '14:00:00', '2025-05-15', '7.2%',
+ '14:00:00', '2025-05-15', '7.2',
  2, 30, 9003, 3, 3),
 
 (304, 'pH ligeramente fuera de rango',
@@ -182,7 +182,7 @@ VALUES
  3, 20, 9005, 1, NULL),
 
 (307, 'Humedad fuera del rango',
- '11:45:00', '2025-06-10', '8.1%',
+ '11:45:00', '2025-06-10', '8.1',
  2, 30, 9006, 3, 3),
 
 (308, 'Posible presencia de alérgeno',
