@@ -1,69 +1,183 @@
+-- ============================================================================
+-- PRIMARY KEYS
+-- ============================================================================
 
-ALTER TABLE Proveedor ADD CONSTRAINT PK_Proveedor PRIMARY KEY (ID_Proveedor);
-ALTER TABLE Moneda ADD CONSTRAINT PK_Moneda PRIMARY KEY (ID_Moneda);
-ALTER TABLE Orden_Compra ADD CONSTRAINT PK_Orden_Compra PRIMARY KEY (ID_Compra);
-ALTER TABLE Tipo_Categoria ADD CONSTRAINT PK_Tipo_Categoria PRIMARY KEY (ID_Categoria);
-ALTER TABLE Materia_Prima ADD CONSTRAINT PK_Materia_Prima PRIMARY KEY (ID_Materia);
-ALTER TABLE Detalle ADD CONSTRAINT PK_Detalle PRIMARY KEY (ID_Compra, ID_Materia);
-ALTER TABLE Recepcion ADD CONSTRAINT PK_Recepcion PRIMARY KEY (ID_Recepcion);
-ALTER TABLE Lote_Materia_Prima ADD CONSTRAINT PK_Lote_MateriaPrima PRIMARY KEY (ID_Lote);
-ALTER TABLE Motivo_Rechazo ADD CONSTRAINT PK_Motivo_Rechazo PRIMARY KEY (ID_Rechazo);
-ALTER TABLE Empleado ADD CONSTRAINT PK_Empleado PRIMARY KEY (ID_Empleado);
-ALTER TABLE Estado ADD CONSTRAINT PK_Estado PRIMARY KEY (ID_Estado);
-ALTER TABLE Tipo_Control ADD CONSTRAINT PK_Tipo_Control PRIMARY KEY (ID_TipoControl);
-ALTER TABLE Cuantitativo ADD CONSTRAINT PK_Cuantitativo PRIMARY KEY (ID_TipoControl);
-ALTER TABLE Cualitativo ADD CONSTRAINT PK_Cualitativo PRIMARY KEY (ID_TipoControl);
-ALTER TABLE Control_De_Calidad ADD CONSTRAINT PK_Control_De_Calidad PRIMARY KEY (ID_Control);
-ALTER TABLE Lote_Produccion ADD CONSTRAINT PK_Lote_Produccion PRIMARY KEY (ID_Lote_Produccion);
-ALTER TABLE Utiliza ADD CONSTRAINT PK_Utiliza PRIMARY KEY (ID_Lote_Produccion, ID_Lote);
-ALTER TABLE Tiene ADD CONSTRAINT PK_Tiene PRIMARY KEY (ID_Control, ID_Lote);
+ALTER TABLE Proveedor
+ADD CONSTRAINT PK_Proveedor PRIMARY KEY (ID_Proveedor);
 
-ALTER TABLE Orden_Compra ADD CONSTRAINT FK_OrdenCompra_Proveedor FOREIGN KEY (ID_Proveedor) REFERENCES Proveedor(ID_Proveedor);
-ALTER TABLE Orden_Compra ADD CONSTRAINT FK_OrdenCompra_Moneda FOREIGN KEY (ID_Moneda) REFERENCES Moneda(ID_Moneda);
+ALTER TABLE Moneda
+ADD CONSTRAINT PK_Moneda PRIMARY KEY (ID_Moneda);
 
-ALTER TABLE Materia_Prima ADD CONSTRAINT FK_MateriaPrima_Categoria FOREIGN KEY (ID_Categoria) REFERENCES Tipo_Categoria(ID_Categoria);
+ALTER TABLE Orden_Compra
+ADD CONSTRAINT PK_Orden_Compra PRIMARY KEY (ID_Compra);
 
-ALTER TABLE Detalle ADD CONSTRAINT FK_Detalle_Compra FOREIGN KEY (ID_Compra) REFERENCES Orden_Compra(ID_Compra);
-ALTER TABLE Detalle ADD CONSTRAINT FK_Detalle_Materia FOREIGN KEY (ID_Materia) REFERENCES Materia_Prima(ID_Materia);
+ALTER TABLE Tipo_Categoria
+ADD CONSTRAINT PK_Tipo_Categoria PRIMARY KEY (ID_Categoria);
 
-ALTER TABLE Lote_Materia_Prima ADD CONSTRAINT FK_LoteMP_Materia FOREIGN KEY (ID_Materia) REFERENCES Materia_Prima(ID_Materia);
-ALTER TABLE Lote_Materia_Prima ADD CONSTRAINT FK_LoteMP_Recepcion FOREIGN KEY (ID_Recepcion) REFERENCES Recepcion(ID_Recepcion);
-ALTER TABLE Lote_Materia_Prima ADD CONSTRAINT FK_LoteMP_Compra FOREIGN KEY (ID_Compra) REFERENCES Orden_Compra(ID_Compra);
+ALTER TABLE Materia_Prima
+ADD CONSTRAINT PK_Materia_Prima PRIMARY KEY (ID_Materia);
 
-ALTER TABLE Cuantitativo ADD CONSTRAINT FK_Cuantitativo_TipoControl FOREIGN KEY (ID_TipoControl) REFERENCES Tipo_Control(ID_TipoControl);
-ALTER TABLE Cualitativo ADD CONSTRAINT FK_Cualitativo_TipoControl FOREIGN KEY (ID_TipoControl) REFERENCES Tipo_Control(ID_TipoControl);
+ALTER TABLE Detalle
+ADD CONSTRAINT PK_Detalle PRIMARY KEY (ID_Compra, ID_Materia);
 
-ALTER TABLE Control_De_Calidad ADD CONSTRAINT FK_Control_TipoControl FOREIGN KEY (ID_TipoControl) REFERENCES Tipo_Control(ID_TipoControl);
-ALTER TABLE Control_De_Calidad ADD CONSTRAINT FK_Control_Empleado FOREIGN KEY (ID_Empleado) REFERENCES Empleado(ID_Empleado);
-ALTER TABLE Control_De_Calidad ADD CONSTRAINT FK_Control_Lote FOREIGN KEY (ID_Lote) REFERENCES Lote_Materia_Prima(ID_Lote);
-ALTER TABLE Control_De_Calidad ADD CONSTRAINT FK_Control_Estado FOREIGN KEY (ID_Estado) REFERENCES Estado(ID_Estado);
-ALTER TABLE Control_De_Calidad ADD CONSTRAINT FK_Control_Rechazo FOREIGN KEY (ID_Rechazo) REFERENCES Motivo_Rechazo(ID_Rechazo);
+ALTER TABLE Recepcion
+ADD CONSTRAINT PK_Recepcion PRIMARY KEY (ID_Recepcion);
 
-ALTER TABLE Utiliza ADD CONSTRAINT FK_Utiliza_LoteProduccion FOREIGN KEY (ID_Lote_Produccion) REFERENCES Lote_Produccion(ID_Lote_Produccion);
-ALTER TABLE Utiliza ADD CONSTRAINT FK_Utiliza_LoteMP FOREIGN KEY (ID_Lote) REFERENCES Lote_Materia_Prima(ID_Lote);
+ALTER TABLE Lote_Materia_Prima
+ADD CONSTRAINT PK_Lote_MateriaPrima PRIMARY KEY (ID_Lote);
 
-ALTER TABLE Tiene ADD CONSTRAINT FK_Tiene_Control FOREIGN KEY (ID_Control) REFERENCES Control_De_Calidad(ID_Control);
-ALTER TABLE Tiene ADD CONSTRAINT FK_Tiene_Lote FOREIGN KEY (ID_Lote) REFERENCES Lote_Materia_Prima(ID_Lote);
+ALTER TABLE Motivo_Rechazo
+ADD CONSTRAINT PK_Motivo_Rechazo PRIMARY KEY (ID_Rechazo);
 
+ALTER TABLE Empleado
+ADD CONSTRAINT PK_Empleado PRIMARY KEY (ID_Empleado);
 
--- PK y FK de Umbral_Control
-ALTER TABLE Umbral_Control
-    ADD CONSTRAINT PK_Umbral_Control
-    PRIMARY KEY (ID_Materia, ID_TipoControl);
+ALTER TABLE Estado
+ADD CONSTRAINT PK_Estado PRIMARY KEY (ID_Estado);
 
-ALTER TABLE Umbral_Control
-    ADD CONSTRAINT FK_UmbralControl_Materia
-    FOREIGN KEY (ID_Materia)
-    REFERENCES Materia_Prima(ID_Materia);
+ALTER TABLE Tipo_Control
+ADD CONSTRAINT PK_Tipo_Control PRIMARY KEY (ID_TipoControl);
 
-ALTER TABLE Umbral_Control
-    ADD CONSTRAINT FK_UmbralControl_TipoControl
-    FOREIGN KEY (ID_TipoControl)
-    REFERENCES Tipo_Control(ID_TipoControl);
+ALTER TABLE Cuantitativo
+ADD CONSTRAINT PK_Cuantitativo PRIMARY KEY (ID_TipoControl);
+
+ALTER TABLE Integridad_Envase
+ADD CONSTRAINT PK_Integridad_Envase PRIMARY KEY (ID_Integridad);
+
+ALTER TABLE Cualitativo
+ADD CONSTRAINT PK_Cualitativo PRIMARY KEY (ID_TipoControl);
+
+ALTER TABLE Control_De_Calidad
+ADD CONSTRAINT PK_Control_De_Calidad PRIMARY KEY (ID_Control);
+
+ALTER TABLE Lote_Produccion
+ADD CONSTRAINT PK_Lote_Produccion PRIMARY KEY (ID_Lote_Produccion);
+
+ALTER TABLE Utiliza
+ADD CONSTRAINT PK_Utiliza PRIMARY KEY (ID_Lote_Produccion, ID_Lote);
+
+ALTER TABLE Tiene
+ADD CONSTRAINT PK_Tiene PRIMARY KEY (ID_Control, ID_Lote);
+
 
 -- ============================================================================
--- TRIGGER: Lote a Lote_produccion debe ser un Lote Aprobado 
+-- FOREIGN KEYS
 -- ============================================================================
+
+ALTER TABLE Orden_Compra
+ADD CONSTRAINT FK_OrdenCompra_Proveedor
+FOREIGN KEY (ID_Proveedor)
+REFERENCES Proveedor(ID_Proveedor);
+
+ALTER TABLE Orden_Compra
+ADD CONSTRAINT FK_OrdenCompra_Moneda
+FOREIGN KEY (ID_Moneda)
+REFERENCES Moneda(ID_Moneda);
+
+
+ALTER TABLE Materia_Prima
+ADD CONSTRAINT FK_MateriaPrima_Categoria
+FOREIGN KEY (ID_Categoria)
+REFERENCES Tipo_Categoria(ID_Categoria);
+
+
+ALTER TABLE Detalle
+ADD CONSTRAINT FK_Detalle_Compra
+FOREIGN KEY (ID_Compra)
+REFERENCES Orden_Compra(ID_Compra);
+
+ALTER TABLE Detalle
+ADD CONSTRAINT FK_Detalle_Materia
+FOREIGN KEY (ID_Materia)
+REFERENCES Materia_Prima(ID_Materia);
+
+
+ALTER TABLE Lote_Materia_Prima
+ADD CONSTRAINT FK_LoteMP_Materia
+FOREIGN KEY (ID_Materia)
+REFERENCES Materia_Prima(ID_Materia);
+
+ALTER TABLE Lote_Materia_Prima
+ADD CONSTRAINT FK_LoteMP_Recepcion
+FOREIGN KEY (ID_Recepcion)
+REFERENCES Recepcion(ID_Recepcion);
+
+ALTER TABLE Lote_Materia_Prima
+ADD CONSTRAINT FK_LoteMP_Compra
+FOREIGN KEY (ID_Compra)
+REFERENCES Orden_Compra(ID_Compra);
+
+
+ALTER TABLE Cuantitativo
+ADD CONSTRAINT FK_Cuantitativo_TipoControl
+FOREIGN KEY (ID_TipoControl)
+REFERENCES Tipo_Control(ID_TipoControl);
+
+
+ALTER TABLE Cualitativo
+ADD CONSTRAINT FK_Cualitativo_TipoControl
+FOREIGN KEY (ID_TipoControl)
+REFERENCES Tipo_Control(ID_TipoControl);
+
+ALTER TABLE Cualitativo
+ADD CONSTRAINT FK_Cualitativo_Integridad
+FOREIGN KEY (ID_Integridad)
+REFERENCES Integridad_Envase(ID_Integridad);
+
+
+ALTER TABLE Control_De_Calidad
+ADD CONSTRAINT FK_Control_TipoControl
+FOREIGN KEY (ID_TipoControl)
+REFERENCES Tipo_Control(ID_TipoControl);
+
+ALTER TABLE Control_De_Calidad
+ADD CONSTRAINT FK_Control_Empleado
+FOREIGN KEY (ID_Empleado)
+REFERENCES Empleado(ID_Empleado);
+
+ALTER TABLE Control_De_Calidad
+ADD CONSTRAINT FK_Control_Lote
+FOREIGN KEY (ID_Lote)
+REFERENCES Lote_Materia_Prima(ID_Lote);
+
+ALTER TABLE Control_De_Calidad
+ADD CONSTRAINT FK_Control_Estado
+FOREIGN KEY (ID_Estado)
+REFERENCES Estado(ID_Estado);
+
+ALTER TABLE Control_De_Calidad
+ADD CONSTRAINT FK_Control_Rechazo
+FOREIGN KEY (ID_Rechazo)
+REFERENCES Motivo_Rechazo(ID_Rechazo);
+
+
+ALTER TABLE Utiliza
+ADD CONSTRAINT FK_Utiliza_LoteProduccion
+FOREIGN KEY (ID_Lote_Produccion)
+REFERENCES Lote_Produccion(ID_Lote_Produccion);
+
+ALTER TABLE Utiliza
+ADD CONSTRAINT FK_Utiliza_LoteMP
+FOREIGN KEY (ID_Lote)
+REFERENCES Lote_Materia_Prima(ID_Lote);
+
+
+ALTER TABLE Tiene
+ADD CONSTRAINT FK_Tiene_Control
+FOREIGN KEY (ID_Control)
+REFERENCES Control_De_Calidad(ID_Control);
+
+ALTER TABLE Tiene
+ADD CONSTRAINT FK_Tiene_Lote
+FOREIGN KEY (ID_Lote)
+REFERENCES Lote_Materia_Prima(ID_Lote);
+
+
+-- ============================================================================
+-- TRIGGER LAB 1
+-- Solo lotes aprobados pueden entrar a producción
+-- ============================================================================
+
 CREATE OR REPLACE FUNCTION fn_check_lote_aprobado()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -71,10 +185,16 @@ BEGIN
         SELECT 1
         FROM Control_De_Calidad c
         WHERE c.ID_Lote = NEW.ID_Lote
+          AND c.ID_Control = (
+              SELECT MAX(c2.ID_Control)
+              FROM Control_De_Calidad c2
+              WHERE c2.ID_Lote = NEW.ID_Lote
+          )
           AND c.ID_Estado = 1
     ) THEN
         RAISE EXCEPTION
-        'El lote % no está aprobado', NEW.ID_Lote;
+        'El lote % no está aprobado en su último control',
+        NEW.ID_Lote;
     END IF;
 
     RETURN NEW;
@@ -82,14 +202,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-/* Estado:
-   1 = Aprobado
-   2 = Observado
-   3 = Rechazado
-*/
-
 CREATE TRIGGER trg_validar_uso_lote
-BEFORE INSERT OR UPDATE ON utiliza
+BEFORE INSERT OR UPDATE ON Utiliza
 FOR EACH ROW
 EXECUTE FUNCTION fn_check_lote_aprobado();
 
