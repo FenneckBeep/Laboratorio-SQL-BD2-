@@ -284,8 +284,10 @@ BEGIN
        FROM Cuantitativo
        WHERE ID_TipoControl = p_id_tipocontrol;
 
-        IF NOT FOUND THEN
-            RETURN 2;
+        IF NOT FOUND
+        OR v_val_min IS NULL
+        OR v_val_max IS NULL THEN
+        RETURN 2;
         END IF;
 
         v_margen := (v_val_max - v_val_min) * 0.10;
