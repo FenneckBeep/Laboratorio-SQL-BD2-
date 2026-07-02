@@ -68,14 +68,19 @@ INSERT INTO Tipo_Control (ID_TipoControl, Nombre) VALUES
 -- 2. ESPECIALIZACIONES
 -- ============================================================================
 
-INSERT INTO Cualitativo (ID_TipoControl) VALUES
-(3),
-(4);
+INSERT INTO Cuantitativo (ID_TipoControl,Unidad_de_Medida,Valor_Min,Valor_Max) VALUES
+(1,'Escala pH',6.40,6.80),
+(2,'% Humedad',0.00,5.00);
 
-INSERT INTO Integridad_Envase VALUES
+INSERT INTO Cualitativo (ID_TipoControl, ID_Integridad) VALUES
+(3,1), -- Excelente
+(4,2); -- Normal
+
+INSERT INTO Integridad_Envase (ID_Integridad, Estado_Envase) VALUES
 (1,'Excelente'),
 (2,'Normal'),
-(3,'Defectuoso');
+(3,'Con daños'),
+(4,'Inaceptable');
 
 
 -- ============================================================================
