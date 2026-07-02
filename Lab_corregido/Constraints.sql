@@ -119,11 +119,6 @@ ADD CONSTRAINT FK_Cualitativo_TipoControl
 FOREIGN KEY (ID_TipoControl)
 REFERENCES Tipo_Control(ID_TipoControl);
 
-ALTER TABLE Cualitativo
-ADD CONSTRAINT FK_Cualitativo_Integridad
-FOREIGN KEY (ID_Integridad)
-REFERENCES Integridad_Envase(ID_Integridad);
-
 
 ALTER TABLE Control_De_Calidad
 ADD CONSTRAINT FK_Control_TipoControl
