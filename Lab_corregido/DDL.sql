@@ -109,7 +109,7 @@ CREATE TABLE Control_De_Calidad (
     Descripcion TEXT,
     Hora TIME,
     Fecha DATE,
-    Valor_Medido DECIMAL(10,2),
+    Valor_Medido VARCHAR(50),
     ID_TipoControl INT,
     ID_Empleado INT,
     ID_Lote INT,
