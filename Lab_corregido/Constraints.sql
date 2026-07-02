@@ -279,10 +279,10 @@ BEGIN
             RETURN 2; -- Observado si no puede convertirse
         END;
 
-        SELECT Valor_Min, Valor_Max
-        INTO v_val_min, v_val_max
-        FROM Cuantitativo
-        WHERE ID_TipoControl = p_id_tipocontrol;
+       SELECT Valor_Min, Valor_Max
+       INTO v_val_min, v_val_max
+       FROM Cuantitativo
+       WHERE ID_TipoControl = p_id_tipocontrol;
 
         IF NOT FOUND THEN
             RETURN 2;
