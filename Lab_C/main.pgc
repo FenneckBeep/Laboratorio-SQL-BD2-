@@ -21,7 +21,7 @@ EXEC SQL INCLUDE sqlca;
 EXEC SQL BEGIN DECLARE SECTION; //comienzo a declarar variables
 
     /* Conexion con la base de dato*/
-    char db_target[] = "produccion@127.0.0.1:5433";
+    char db_target[] = "produccion@127.0.0.1:5432";
     char db_user[]   = "postgres";
     char db_pass[]   = "1234";
 
@@ -87,7 +87,7 @@ int main() {
     int opcion;
 
     /* Conectar a la base de datos lab02 */
-    EXEC SQL CONNECT TO produccion@db_postgres:5432 USER postgres IDENTIFIED BY "1234";
+    EXEC SQL CONNECT TO :db_target USER :db_user USING :db_pass;
     if (sqlca.sqlcode < 0) {
         fprintf(stderr, "Error al conectar a la base de datos '%s': %s\n",
                 db_target, sqlca.sqlerrm.sqlerrmc);
