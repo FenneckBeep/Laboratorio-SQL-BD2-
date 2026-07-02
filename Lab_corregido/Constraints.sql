@@ -207,25 +207,42 @@ BEFORE INSERT OR UPDATE ON Utiliza
 FOR EACH ROW
 EXECUTE FUNCTION fn_check_lote_aprobado();
 
--- 
--- FUNCION: fn_calcular_estado_lote
+-- ============================================================================
+-- FUNCION LAB 2: CALCULAR ESTADO AUTOMATICO
+-- 1 = Aprobado
+-- 2 = Observado
+-- 3 = Rechazado
+-- ============================================================================
+-- Recibe:
+--   p_id_lote        -> Lote a controlar
+--   p_id_tipocontrol -> Tipo de control aplicado
+--   p_valor_medido   -> Valor ingresado por el usuario (texto)
 --
--- Recibe: id_lote, id_tipo_control, valor_medido (como texto)
--- Retorna: INTEGER y esto puede retornar
+-- Retorna:
 --   1 = Aprobado
---   2 = Observado 
+--   2 = Observado
 --   3 = Rechazado
 --
-
---  - Si el tipo de control es CUANTITATIVO:
---       * Se intenta convertir valor_medido a numero
---       * Se compara con Umbral_Control para la materia prima del lote
---       * Si no hay umbral definido, devuelve Observado (2) por precaucion y porque me da la gana
---  - Si el tipo de control es CUALITATIVO:
---       * Si el valor es 'Conforme' o 'Negativo' -> Aprobado (1)
---       * Si el valor es 'Defectuoso' o esta en la 'Miseria (como Mexico)' -> Rechazado (3)
---       * Por cualquier otro cosa va -> Observado/enrevision (2)
--- 
+-- LOGICA:
+--
+-- 1) Si el tipo de control es CUANTITATIVO:
+--      * Se intenta convertir el valor ingresado a numero
+--      * Se buscan Valor_Min y Valor_Max en la tabla Cuantitativo
+--      * Si el valor esta dentro del rango -> Aprobado (1)
+--      * Si esta ligeramente fuera (10% margen) -> Observado (2)
+--      * Si esta muy fuera del rango -> Rechazado (3)
+--      * Si no puede convertirse a numero -> Observado (2)
+--
+-- 2) Si el tipo de control es CUALITATIVO:
+--      Valores aceptados como Aprobado:
+--          'Conforme', 'Negativo', 'Aprobado', 'OK'
+--
+--      Valores aceptados como Rechazado:
+--          'Defectuoso', 'Inaceptable', 'Positivo', 'Rechazado'
+--
+--      Cualquier otro valor:
+--          Observado / Pendiente (2)
+-- ============================================================================
 
 CREATE OR REPLACE FUNCTION fn_calcular_estado_lote(
     p_id_lote        INT,
@@ -236,83 +253,100 @@ RETURNS INTEGER
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    v_id_materia   INT;
-    v_val_min      NUMERIC(10,4);
-    v_val_max      NUMERIC(10,4);
-    v_valor_num    NUMERIC(10,4);
-    v_margen       NUMERIC(10,4);
-    v_es_cuant     BOOLEAN;
+    v_val_min    NUMERIC(10,4);
+    v_val_max    NUMERIC(10,4);
+    v_valor_num  NUMERIC(10,4);
+    v_margen     NUMERIC(10,4);
+    v_es_cuant   BOOLEAN;
 BEGIN
-    -- Obtener la materia prima del lote
-    SELECT id_materia INTO v_id_materia
-    FROM lote_materia_prima
-    WHERE id_lote = p_id_lote;
-
-    IF NOT FOUND THEN
-        RAISE EXCEPTION 'El lote % no existe', p_id_lote;
-    END IF;
-
     -- Verificar si el tipo de control es cuantitativo
     SELECT EXISTS (
-        SELECT 1 FROM cuantitativo WHERE id_tipocontrol = p_id_tipocontrol
-    ) INTO v_es_cuant;
+        SELECT 1
+        FROM Cuantitativo
+        WHERE ID_TipoControl = p_id_tipocontrol
+    )
+    INTO v_es_cuant;
 
-    -- -------------------------------------------------------
+    -- =====================================================================
     -- CONTROL CUANTITATIVO
-    -- -------------------------------------------------------
+    -- =====================================================================
     IF v_es_cuant THEN
 
-        -- Intentar convertir el valor a numero
         BEGIN
-            -- Quitar posibles sufijos como '%' o letras
-            v_valor_num := REGEXP_REPLACE(p_valor_medido, '[^0-9\.\-]', '', 'g')::NUMERIC(10,4);
+            v_valor_num := REGEXP_REPLACE(
+                p_valor_medido,
+                '[^0-9\.\-]',
+                '',
+                'g'
+            )::NUMERIC(10,4);
+
         EXCEPTION WHEN OTHERS THEN
-            -- No se pudo convertir -> Observado
-            RETURN 2;
+            RETURN 2; -- Observado si no puede convertirse
         END;
 
-        -- Buscar umbral para esta materia prima y tipo de control
-        SELECT valor_min, valor_max
+        SELECT Valor_Min, Valor_Max
         INTO v_val_min, v_val_max
-        FROM umbral_control
-        WHERE id_materia    = v_id_materia
-          AND id_tipocontrol = p_id_tipocontrol;
+        FROM Cuantitativo
+        WHERE ID_TipoControl = p_id_tipocontrol;
 
         IF NOT FOUND THEN
-            -- Sin umbral definido -> Observado por precaucion
             RETURN 2;
         END IF;
 
-        -- Calcular margen del 10% del rango para zona "observada"
         v_margen := (v_val_max - v_val_min) * 0.10;
 
-        -- Fuera del rango -> Rechazado
         IF v_valor_num < v_val_min OR v_valor_num > v_val_max THEN
-            -- Dentro de la zona limítrofe (10% del margen) -> Observado
-            IF v_valor_num >= (v_val_min - v_margen) AND v_valor_num <= (v_val_max + v_margen) THEN
+
+            IF v_valor_num >= (v_val_min - v_margen)
+               AND v_valor_num <= (v_val_max + v_margen) THEN
                 RETURN 2; -- Observado
             ELSE
                 RETURN 3; -- Rechazado
             END IF;
+
         ELSE
             RETURN 1; -- Aprobado
         END IF;
 
-    -- -------------------------------------------------------
+    -- =====================================================================
     -- CONTROL CUALITATIVO
-    -- -------------------------------------------------------
+    -- =====================================================================
     ELSE
-        IF UPPER(TRIM(p_valor_medido)) IN ('CONFORME', 'NEGATIVO', 'APROBADO', 'OK') THEN
-            RETURN 1; -- Aprobado
-        ELSIF UPPER(TRIM(p_valor_medido)) IN ('DEFECTUOSO', 'INACEPTABLE', 'POSITIVO', 'RECHAZADO') THEN
-            RETURN 3; -- Rechazado
+        IF UPPER(TRIM(p_valor_medido))
+           IN ('CONFORME', 'NEGATIVO', 'APROBADO', 'OK') THEN
+            RETURN 1;
+
+        ELSIF UPPER(TRIM(p_valor_medido))
+           IN ('DEFECTUOSO', 'INACEPTABLE', 'POSITIVO', 'RECHAZADO') THEN
+            RETURN 3;
+
         ELSE
-            RETURN 2; -- Observado / Pendiente
+            RETURN 2;
         END IF;
     END IF;
 
 END;
 $$;
+
+
+-- ============================================================================
+-- PROCEDURE LAB 2: REGISTRAR CONTROL
+-- ============================================================================
+-- Funcion:
+--   Registra un nuevo control de calidad automaticamente.
+--
+-- Proceso:
+--   1) Llama a fn_calcular_estado_lote()
+--   2) Determina si el control queda:
+--          Aprobado / Observado / Rechazado
+--   3) Genera automaticamente un nuevo ID_Control
+--   4) Inserta el registro en Control_De_Calidad
+--   5) Inserta la relacion correspondiente en Tiene
+--
+-- Salidas:
+--   p_id_control -> ID generado del control
+--   p_estado     -> Estado calculado
+-- ============================================================================
 
 CREATE OR REPLACE PROCEDURE sp_registrar_control(
     p_id_lote          INT,
@@ -332,27 +366,47 @@ DECLARE
     v_estado     INT;
     v_id_rechazo INT := NULL;
 BEGIN
-    -- Calcular estado
-    v_estado := fn_calcular_estado_lote(p_id_lote, p_id_tipocontrol, p_valor_medido);
+    v_estado := fn_calcular_estado_lote(
+        p_id_lote,
+        p_id_tipocontrol,
+        p_valor_medido
+    );
 
-    -- Obtener siguiente ID
-    SELECT COALESCE(MAX(id_control), 0) + 1
+    SELECT COALESCE(MAX(ID_Control), 0) + 1
     INTO v_nuevo_id
-    FROM control_de_calidad;
+    FROM Control_De_Calidad;
 
-    -- Insertar control
-    INSERT INTO control_de_calidad
-        (id_control, descripcion, hora, fecha, valor_medido,
-         id_tipocontrol, id_empleado, id_lote, id_estado, id_rechazo)
+    INSERT INTO Control_De_Calidad
+    (
+        ID_Control,
+        Descripcion,
+        Hora,
+        Fecha,
+        Valor_Medido,
+        ID_TipoControl,
+        ID_Empleado,
+        ID_Lote,
+        ID_Estado,
+        ID_Rechazo
+    )
     VALUES
-        (v_nuevo_id, p_descripcion, p_hora, p_fecha, p_valor_medido,
-         p_id_tipocontrol, p_id_empleado, p_id_lote, v_estado, v_id_rechazo);
+    (
+        v_nuevo_id,
+        p_descripcion,
+        p_hora,
+        p_fecha,
+        p_valor_medido,
+        p_id_tipocontrol,
+        p_id_empleado,
+        p_id_lote,
+        v_estado,
+        v_id_rechazo
+    );
 
-    -- Insertar en tabla TIENE
-    INSERT INTO tiene (id_control, id_lote)
+    INSERT INTO Tiene (ID_Control, ID_Lote)
     VALUES (v_nuevo_id, p_id_lote);
 
     p_id_control := v_nuevo_id;
-    p_estado     := v_estado;
+    p_estado := v_estado;
 END;
 $$;
