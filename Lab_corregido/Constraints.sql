@@ -314,39 +314,6 @@ BEGIN
 END;
 $$;
 
--- ============================================================
--- TRIGGER: Verificar que lote en produccion este Aprobado
--- (ya existia en el lab 1, se mantiene / actualiza)
--- ============================================================
-
-CREATE OR REPLACE FUNCTION fn_check_lote_aprobado()
-RETURNS TRIGGER AS $$
-BEGIN
-    -- Verificar que el ultimo estado del lote sea Aprobado (1)
-    IF NOT EXISTS (
-        SELECT 1
-        FROM control_de_calidad c
-        WHERE c.id_lote = NEW.id_lote
-          AND c.id_estado = 1
-          AND c.id_control = (
-              SELECT MAX(c2.id_control)
-              FROM control_de_calidad c2
-              WHERE c2.id_lote = NEW.id_lote
-          )
-    ) THEN
-        RAISE EXCEPTION
-            'El lote % no esta en estado Aprobado. No puede ser usado en produccion.',
-            NEW.id_lote;
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_validar_uso_lote
-BEFORE INSERT OR UPDATE ON utiliza
-FOR EACH ROW
-EXECUTE FUNCTION fn_check_lote_aprobado();
-
 CREATE OR REPLACE PROCEDURE sp_registrar_control(
     p_id_lote          INT,
     p_fecha            DATE,
