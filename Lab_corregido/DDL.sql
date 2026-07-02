@@ -93,8 +93,8 @@ CREATE TABLE Tipo_Control (
 CREATE TABLE Cuantitativo (
     ID_TipoControl INT NOT NULL,
     Unidad_de_Medida VARCHAR(20),
-    Min DECIMAL(10,2),
-    Max DECIMAL(10,2) 
+    Valor_Min DECIMAL(10,2),
+    Valor_Max DECIMAL(10,2)
 );
 
 
@@ -108,7 +108,7 @@ CREATE TABLE Control_De_Calidad (
     ID_Control INT NOT NULL,
     Descripcion TEXT,
     Hora TIME,
-    fecha DATE,
+    Fecha DATE,
     Valor_Medido DECIMAL(10,2),
     ID_TipoControl INT,
     ID_Empleado INT,
