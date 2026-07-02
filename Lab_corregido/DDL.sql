@@ -100,6 +100,7 @@ CREATE TABLE Cuantitativo (
 
 CREATE TABLE Cualitativo (
     ID_TipoControl INT NOT NULL,
+    ID_Integridad INT
 );
 
 
