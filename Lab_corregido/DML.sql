@@ -68,13 +68,20 @@ INSERT INTO Tipo_Control (ID_TipoControl, Nombre) VALUES
 -- 2. ESPECIALIZACIONES
 -- ============================================================================
 
-INSERT INTO Cuantitativo (ID_TipoControl, Unidad_de_Medida) VALUES
-(1, 'Escala pH'),
-(2, '% Porcentaje');
+INSERT INTO Cuantitativo
+(ID_TipoControl, Unidad_de_Medida, Valor_Min, Valor_Max)
+VALUES
+(1, 'Escala pH', 6.40, 6.80),
+(2, '% Porcentaje', 0.00, 5.00);
 
-INSERT INTO Cualitativo (ID_TipoControl) VALUES
-(3),
-(4);
+INSERT INTO Integridad_Envase (ID_Integridad, Nombre_Integridad) VALUES
+(1, 'Excelente'),
+(2, 'Normal'),
+(3, 'Defectuoso');
+
+INSERT INTO Cualitativo (ID_TipoControl, ID_Integridad) VALUES
+(3, 2), AAAAAAAAAAAAAAAA
+(4, 1); AAAAAAAAAAAAAAAAA
 
 
 -- ============================================================================
@@ -230,12 +237,3 @@ INSERT INTO Utiliza (ID_Lote_Produccion, ID_Lote, Cant) VALUES
 (8003, 9005, 600),
 (8004, 9007, 750);
 
---Dato de prueba Umbral Control: Leche Entera Pasteurizada (1001) - pH (1): rango 6.4 a 6.8
-INSERT INTO Umbral_Control (ID_Materia, ID_TipoControl, Valor_Min, Valor_Max)
-VALUES (1001, 1, 6.4, 6.8);
-
--- Fermento Láctico en Polvo (1002) - Humedad (2): máximo 5%
-INSERT INTO Umbral_Control (ID_Materia, ID_TipoControl, Valor_Min, Valor_Max)
-VALUES (1002, 2, 0.0, 5.0);
-
--- Botella PET (1003) es cualitativo, no tiene umbral numérico → no va acá
