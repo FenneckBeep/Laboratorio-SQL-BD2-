@@ -1,0 +1,26 @@
+services:
+  db_postgres:
+    image: postgres:17-bookworm
+    container_name: postgres_lab02
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "1234"
+      POSTGRES_DB: lab02
+    ports:
+      - "5435:5432"  # Windows/host usa 5435, dentro de la red de Docker se usa el 5432 interno.
+    volumes:
+      - ./Lab_corregido:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d lab02"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  app_calidad:
+    build: "./Lab_C (Rework)"
+    container_name: programa_calidad_app
+    depends_on:
+      db_postgres:
+        condition: service_healthy
+    stdin_open: true
+    tty: true
