@@ -135,7 +135,7 @@ int main() {
                 reporteControlesEmpleado();
                 break;
             case 4:
-                printf("Desconectando... OSTIA TIO FUNCIONO!\n");
+                printf("Desconectando...\n");
                 EXEC SQL DISCONNECT CURRENT;
                 return EXIT_SUCCESS;
             default:
