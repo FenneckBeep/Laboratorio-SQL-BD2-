@@ -262,10 +262,13 @@ void registrarControlCalidad() {
     while (1) {
         printf("ID del Lote a inspeccionar: ");
         if (scanf("%d", &h_id_lote) != 1) {
+<<<<<<< HEAD
             if (feof(stdin)) {
             printf("\nFin de entrada (EOF) detectado. Cancelando operacion.\n");
                 return;
             }
+=======
+>>>>>>> c9684498d505771d515e4ec725ef2cdc0c5e4854
             printf("  >> Debe ingresar un numero. Intente de nuevo.\n");
             limpiarBuffer();
             continue;
@@ -308,10 +311,13 @@ void registrarControlCalidad() {
     while (1) {
         printf("Fecha del control (YYYY-MM-DD): ");
         if (scanf("%19s", h_fecha_control) != 1) {
+<<<<<<< HEAD
             if (feof(stdin)) {
             printf("\nFin de entrada (EOF) detectado. Cancelando operacion.\n");
                 return;
             }
+=======
+>>>>>>> c9684498d505771d515e4ec725ef2cdc0c5e4854
             printf("  >> Entrada invalida. Intente de nuevo.\n");
             limpiarBuffer();
             continue;
@@ -330,10 +336,13 @@ void registrarControlCalidad() {
     while (1) {
         printf("Hora del control (HH:MM): ");
         if (scanf("%5s", h_hora_control) != 1) {
+<<<<<<< HEAD
             if (feof(stdin)) {
             printf("\nFin de entrada (EOF) detectado. Cancelando operacion.\n");
                 return;
             }
+=======
+>>>>>>> c9684498d505771d515e4ec725ef2cdc0c5e4854
             printf("  >> Entrada invalida. Intente de nuevo.\n");
             limpiarBuffer();
             continue;
@@ -395,10 +404,13 @@ void registrarControlCalidad() {
     while (1) {
         printf("\nID Tipo de Control: ");
         if (scanf("%d", &h_id_tipo_control) != 1) {
+<<<<<<< HEAD
             if (feof(stdin)) {
             printf("\nFin de entrada (EOF) detectado. Cancelando operacion.\n");
                 return;
             }
+=======
+>>>>>>> c9684498d505771d515e4ec725ef2cdc0c5e4854
             printf("  >> Debe ingresar un numero. Intente de nuevo.\n");
             limpiarBuffer();
             continue;
@@ -442,10 +454,13 @@ void registrarControlCalidad() {
         while (1) {
             printf("Valor observado (numero medido): ");
             if (scanf("%50s", h_valor_medido) != 1) {
+<<<<<<< HEAD
                 if (feof(stdin)) {
                 printf("\nFin de entrada (EOF) detectado. Cancelando operacion.\n");
                     return;
                 }
+=======
+>>>>>>> c9684498d505771d515e4ec725ef2cdc0c5e4854
                 printf("  >> Entrada invalida. Intente de nuevo.\n");
                 limpiarBuffer();
                 continue;
@@ -470,10 +485,13 @@ void registrarControlCalidad() {
         while (1) {
             printf("Seleccione una opcion: ");
             if (scanf("%d", &sel) != 1) {
+<<<<<<< HEAD
                 if (feof(stdin)) {
                 printf("\nFin de entrada (EOF) detectado. Cancelando operacion.\n");
                     return;
                 }
+=======
+>>>>>>> c9684498d505771d515e4ec725ef2cdc0c5e4854
                 printf("  >> Debe ingresar un numero del 1 al 9.\n");
                 limpiarBuffer();
                 continue;
@@ -488,10 +506,13 @@ void registrarControlCalidad() {
                 while (1) {
                     printf("Describa brevemente lo observado: ");
                     if (scanf("%50s", h_valor_medido) != 1) {
+<<<<<<< HEAD
                         if (feof(stdin)) {
                         printf("\nFin de entrada (EOF) detectado. Cancelando operacion.\n");
                             return;
                         }
+=======
+>>>>>>> c9684498d505771d515e4ec725ef2cdc0c5e4854
                         printf("  >> Entrada invalida. Intente de nuevo.\n");
                         limpiarBuffer();
                         continue;
@@ -551,10 +572,13 @@ void registrarControlCalidad() {
 
         printf("Seleccione integridad del envase (numero): ");
         if (scanf("%d", &id_integridad_sel) != 1) {
+<<<<<<< HEAD
             if (feof(stdin)) {
             printf("\nFin de entrada (EOF) detectado. Cancelando operacion.\n");
                 return;
             }
+=======
+>>>>>>> c9684498d505771d515e4ec725ef2cdc0c5e4854
             printf("  >> Debe ingresar un numero. Intente de nuevo.\n");
             limpiarBuffer();
             continue;
@@ -612,10 +636,13 @@ void registrarControlCalidad() {
     while (1) {
         printf("ID del Empleado/Funcionario: ");
         if (scanf("%d", &h_id_empleado) != 1) {
+<<<<<<< HEAD
             if (feof(stdin)) {
             printf("\nFin de entrada (EOF) detectado. Cancelando operacion.\n");
                 return;
             }
+=======
+>>>>>>> c9684498d505771d515e4ec725ef2cdc0c5e4854
             printf("  >> Debe ingresar un numero. Intente de nuevo.\n");
             limpiarBuffer();
             continue;
@@ -690,10 +717,13 @@ void registrarControlCalidad() {
             printf("Seleccione una opcion: ");
 
             if (scanf("%d", &destino_sel) != 1) {
+<<<<<<< HEAD
                 if (feof(stdin)) {
                 printf("\nFin de entrada (EOF) detectado. Cancelando operacion.\n");
                     return;
                 }
+=======
+>>>>>>> c9684498d505771d515e4ec725ef2cdc0c5e4854
                 printf("  >> Debe ingresar 1 o 2. Intente de nuevo.\n");
                 limpiarBuffer();
                 continue;
@@ -797,10 +827,13 @@ void reporteControlesEmpleado() {
     while (1) {
         printf("Fecha de inicio (YYYY-MM-DD): ");
         if (scanf("%19s", h_fecha_desde) != 1) {
+<<<<<<< HEAD
             if (feof(stdin)) {
             printf("\nFin de entrada (EOF) detectado. Cancelando operacion.\n");
                 return;
             }
+=======
+>>>>>>> c9684498d505771d515e4ec725ef2cdc0c5e4854
             printf("  >> Entrada invalida. Intente de nuevo.\n");
             limpiarBuffer();
             continue;
@@ -817,10 +850,13 @@ void reporteControlesEmpleado() {
     while (1) {
         printf("Fecha de fin   (YYYY-MM-DD): ");
         if (scanf("%19s", h_fecha_hasta) != 1) {
+<<<<<<< HEAD
             if (feof(stdin)) {
             printf("\nFin de entrada (EOF) detectado. Cancelando operacion.\n");
                 return;
             }
+=======
+>>>>>>> c9684498d505771d515e4ec725ef2cdc0c5e4854
             printf("  >> Entrada invalida. Intente de nuevo.\n");
             limpiarBuffer();
             continue;
