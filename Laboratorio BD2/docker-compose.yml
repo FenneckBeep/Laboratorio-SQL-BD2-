@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: "1234"
       POSTGRES_DB: lab02
     ports:
-      - "5435:5432"  # Windows/host usa 5435, dentro de la red de Docker se usa el 5432 interno.
+      - "5436:5432"  # Windows/host usa 5436, dentro de la red de Docker se usa el 5432 interno.
     volumes:
       - ./Lab_corregido:/docker-entrypoint-initdb.d
     healthcheck:

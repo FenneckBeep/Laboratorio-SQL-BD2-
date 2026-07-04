@@ -38,7 +38,7 @@ EXEC SQL BEGIN DECLARE SECTION; //comienzo a declarar variables
     /* --- Opcion 2: Registrar control de calidad --- */
     int    h_id_control;
     char   h_fecha_control[20];     /* YYYY-MM-DD           */
-    char   h_hora_control[10];      /* HH:MM:SS             */
+    char   h_hora_control[10];      /* HH:MM             */
     int    h_id_materia;
     int    h_id_tipo_control;
     char   h_valor_medido[51];
@@ -331,13 +331,18 @@ void registrarControlCalidad() {
         return;
     }
 
-    printf("Hora del control (HH:MM:SS): ");
-    if (scanf("%9s", h_hora_control) != 1) {
+    printf("Hora del control (HH:MM): ");
+    if (scanf("%5s", h_hora_control) != 1) {
         printf("Hora invalida.\n");
         limpiarBuffer();
         return;
     }
     limpiarBuffer();
+    /* Completar automaticamente los segundos para que PostgreSQL
+       acepte el valor como TIME sin que el usuario tenga que escribirlos */
+    if (strlen(h_hora_control) == 5) {
+        strcat(h_hora_control, ":00");
+    }
 
     /* 3. Materia prima controlada */
     EXEC SQL SELECT id_materia INTO :h_id_materia
