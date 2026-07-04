@@ -18,7 +18,7 @@ EXEC SQL INCLUDE sqlca;
 /* ================================================================
    DECLARACION DE VARIABLES HOST
    ================================================================ */
-EXEC SQL BEGIN DECLARE SECTION; //comienzo a declarar variables
+EXEC SQL BEGIN DECLARE SECTION;
 
     /* Conexion con la base de datos.
        IMPORTANTE: 'db_postgres' es el nombre del servicio en docker-compose.yml,
@@ -37,18 +37,18 @@ EXEC SQL BEGIN DECLARE SECTION; //comienzo a declarar variables
 
     /* --- Opcion 2: Registrar control de calidad --- */
     int    h_id_control;
-    char   h_fecha_control[20];     /* YYYY-MM-DD           */
-    char   h_hora_control[10];      /* HH:MM:SS             */
+    char   h_fecha_control[20];     /* YYYY-MM-DD  */
+    char   h_hora_control[10];      /* HH:MM       */
     int    h_id_materia;
     int    h_id_tipo_control;
     char   h_valor_medido[51];
     char   h_unidad_medida[21];
-    char   h_integridad_envase[30]; /* excelente/normal/con daños/inaceptable, etc... */
+    char   h_integridad_envase[30];
     char   h_descripcion[256];
     int    h_id_empleado;
-    int    h_id_estado;             
+    int    h_id_estado;
     int    h_id_rechazo;
-    int    h_hay_rechazo;          
+    int    h_hay_rechazo;
 
     /* nombre empleado para mostrar */
     char   h_nom_empleado[101];
@@ -75,7 +75,7 @@ EXEC SQL BEGIN DECLARE SECTION; //comienzo a declarar variables
     /* indicadores de null para campos opcionales */
     int    h_ind_rechazo;   /* -1 = NULL, 0 = valor presente */
 
-EXEC SQL END DECLARE SECTION; //fin de declarar variables
+EXEC SQL END DECLARE SECTION;
 
 /* ================================================================
    PROTOTIPOS
@@ -85,6 +85,7 @@ void registrarControlCalidad();
 void reporteControlesEmpleado();
 int  limpiarBuffer();
 int  esFechaValida(char *fecha);
+int  esHoraValida(char *hora);
 
 /* ================================================================
    MAIN
@@ -92,7 +93,6 @@ int  esFechaValida(char *fecha);
 int main() {
     int opcion;
 
-    /* Conectar a la base de datos lab02 */
     EXEC SQL CONNECT TO :db_target USER :db_user USING :db_pass;
     if (sqlca.sqlcode < 0) {
         fprintf(stderr, "Error al conectar a la base de datos '%s': %s\n",
@@ -102,10 +102,8 @@ int main() {
 
     printf("Conexion exitosa a la base de datos '%s'\n", db_target);
 
-    /* Activar autocommit desactivado para manejar transacciones */
     EXEC SQL SET AUTOCOMMIT TO OFF;
 
-    /* Menu principal */
     while (1) {
         printf("\n============================================================\n");
         printf("         SISTEMA DE CONTROL DE CALIDAD - LAB 02            \n");
@@ -118,6 +116,11 @@ int main() {
         printf("Seleccione una opcion: ");
 
         if (scanf("%d", &opcion) != 1) {
+            if (feof(stdin)) {
+            printf("\nFin de entrada (EOF) detectado. Cerrando el programa.\n");
+                EXEC SQL DISCONNECT CURRENT;
+                return EXIT_SUCCESS;
+            }
             printf("Ingrese un numero valido.\n");
             limpiarBuffer();
             continue;
@@ -125,17 +128,11 @@ int main() {
         limpiarBuffer();
 
         switch (opcion) {
-            case 1:
-                listarLotesPendientes();
-                break;
-            case 2:
-                registrarControlCalidad();
-                break;
-            case 3:
-                reporteControlesEmpleado();
-                break;
+            case 1: listarLotesPendientes();    break;
+            case 2: registrarControlCalidad();  break;
+            case 3: reporteControlesEmpleado(); break;
             case 4:
-                printf("Desconectando... OSTIA TIO FUNCIONO!\n");
+                printf("Desconectando...\n");
                 EXEC SQL DISCONNECT CURRENT;
                 return EXIT_SUCCESS;
             default:
@@ -147,7 +144,7 @@ int main() {
 }
 
 /* ================================================================
-   FUNCION AUXILIAR: limpiar buffer de entrada
+   AUXILIARES
    ================================================================ */
 int limpiarBuffer() {
     int c;
@@ -155,11 +152,6 @@ int limpiarBuffer() {
     return 0;
 }
 
-/* ================================================================
-   FUNCION AUXILIAR: validar formato de fecha YYYY-MM-DD
-   Chequeo simple de formato (no valida dias por mes/bisiestos, pero
-   evita mandar cosas como "si" a la base y romper la transaccion).
-   ================================================================ */
 int esFechaValida(char *fecha) {
     int i;
     if (strlen(fecha) != 10) return 0;
@@ -173,13 +165,19 @@ int esFechaValida(char *fecha) {
     return 1;
 }
 
+/* Valida formato HH:MM (5 caracteres) */
+int esHoraValida(char *hora) {
+    if (strlen(hora) != 5) return 0;
+    if (hora[2] != ':')    return 0;
+    if (hora[0] < '0' || hora[0] > '2') return 0;
+    if (hora[1] < '0' || hora[1] > '9') return 0;
+    if (hora[3] < '0' || hora[3] > '5') return 0;
+    if (hora[4] < '0' || hora[4] > '9') return 0;
+    return 1;
+}
+
 /* ================================================================
    FUNCION 1: Listar lotes pendientes de inspeccion o reinspeccion
-   
-   Un lote requiere inspeccion si:
-     a) Nunca tuvo un control de calidad (lote nuevo sin control)
-     b) Su ultimo control quedo en estado 'Observado' (ID_Estado = 2)
-        y necesita reinspeccion
    ================================================================ */
 void listarLotesPendientes() {
 
@@ -193,18 +191,15 @@ void listarLotesPendientes() {
             p.nombre,
             r.fecha_recepcion
         FROM lote_materia_prima l
-        JOIN recepcion r         ON l.id_recepcion  = r.id_recepcion
-        JOIN orden_compra oc     ON l.id_compra     = oc.id_compra
-        JOIN proveedor p         ON oc.id_proveedor = p.id_proveedor
+        JOIN recepcion r     ON l.id_recepcion  = r.id_recepcion
+        JOIN orden_compra oc ON l.id_compra     = oc.id_compra
+        JOIN proveedor p     ON oc.id_proveedor = p.id_proveedor
         WHERE
-            /* Nunca fue controlado */
             NOT EXISTS (
-                SELECT 1
-                FROM control_de_calidad c
+                SELECT 1 FROM control_de_calidad c
                 WHERE c.id_lote = l.id_lote
             )
             OR
-            /* Ultimo control fue Observado (id_estado = 2) */
             (
                 SELECT c2.id_estado
                 FROM control_de_calidad c2
@@ -226,12 +221,9 @@ void listarLotesPendientes() {
 
     while (1) {
         EXEC SQL FETCH cur_lotes_pendientes
-            INTO :h_id_lote,
-                 :h_nom_proveedor,
-                 :h_fecha_recepcion;
+            INTO :h_id_lote, :h_nom_proveedor, :h_fecha_recepcion;
 
-        if (sqlca.sqlcode == 100) break;  /* No hay mas filas */
-
+        if (sqlca.sqlcode == 100) break;
         if (sqlca.sqlcode < 0) {
             printf("Error al leer datos: %s\n", sqlca.sqlerrm.sqlerrmc);
             EXEC SQL ROLLBACK;
@@ -239,17 +231,15 @@ void listarLotesPendientes() {
         }
 
         printf("%-10d | %-35s | %-15s\n",
-               h_id_lote,
-               h_nom_proveedor,
-               h_fecha_recepcion);
+               h_id_lote, h_nom_proveedor, h_fecha_recepcion);
         encontrados++;
     }
 
     EXEC SQL CLOSE cur_lotes_pendientes;
 
-    if (encontrados == 0) {
+    if (encontrados == 0)
         printf("No hay lotes pendientes de inspeccion.\n");
-    } else {
+    else {
         printf("--------------------------------------------------------------------------\n");
         printf("Total de lotes pendientes: %d\n", encontrados);
     }
@@ -257,115 +247,132 @@ void listarLotesPendientes() {
 
 /* ================================================================
    FUNCION 2: Registrar control de calidad de un lote
-
-   El calculo del estado (Aprobado/Rechazado/Observado) se delega
-   a la funcion almacenada fn_calcular_estado_lote(id_lote, id_tipo_control, valor_medido)
-   que fue implementada en la base de datos con PL/pgSQL.
-
-   Logica:
-     - Aprobado  (1): valor dentro del rango [min, max] del tipo de control
-     - Observado (2): valor cercano al limite (dentro de un 10% del margen)
-     - Rechazado (3): valor fuera del rango
    ================================================================ */
 void registrarControlCalidad() {
+
     EXEC SQL BEGIN DECLARE SECTION;
     int existe_lote = 0;
     EXEC SQL END DECLARE SECTION;
-    
-    char confirmacion[4];
 
     printf("\n--- Registrar Control de Calidad ---\n");
 
-    /* 1. Pedir ID del lote */
-    printf("ID del Lote a inspeccionar: ");
-    if (scanf("%d", &h_id_lote) != 1) {
-        printf("ID invalido.\n");
-        limpiarBuffer();
-        return;
-    }
-    limpiarBuffer();
-
-    /* Verificar que el lote existe */
-    EXEC SQL SELECT COUNT(1)
-        INTO :existe_lote
-        FROM lote_materia_prima
-        WHERE id_lote = :h_id_lote;
-
-    if (existe_lote == 0) {
-        printf("El lote %d no existe en la base de datos.\n", h_id_lote);
-        return;
-    }
-
-    /* Un lote Rechazado se considera devuelto/descartado: ya no esta
-       fisicamente disponible para seguir siendo controlado. */
-    {
-        EXEC SQL BEGIN DECLARE SECTION;
-        int ultimo_estado = 0;
-        int ind_ultimo_estado = -1;
-        EXEC SQL END DECLARE SECTION;
-
-        EXEC SQL SELECT id_estado INTO :ultimo_estado :ind_ultimo_estado
-            FROM control_de_calidad
-            WHERE id_lote = :h_id_lote
-            ORDER BY id_control DESC
-            LIMIT 1;
-
-        if (ind_ultimo_estado >= 0 && ultimo_estado == 3) {
-            printf("El lote %d ya fue RECHAZADO en un control anterior "
-                   "(devuelto/descartado) y no puede volver a controlarse.\n",
-                   h_id_lote);
-            return;
+    /* -----------------------------------------------------------
+       1. ID del lote — reintenta hasta recibir uno valido
+       ----------------------------------------------------------- */
+    while (1) {
+        printf("ID del Lote a inspeccionar: ");
+        if (scanf("%d", &h_id_lote) != 1) {
+            if (feof(stdin)) {
+            printf("\nFin de entrada (EOF) detectado. Cancelando operacion.\n");
+                return;
+            }
+            printf("  >> Debe ingresar un numero. Intente de nuevo.\n");
+            limpiarBuffer();
+            continue;
         }
-    }
-
-    /* 2. Fecha y hora del control */
-    printf("Fecha del control (YYYY-MM-DD): ");
-    if (scanf("%19s", h_fecha_control) != 1) {
-        printf("Fecha invalida.\n");
         limpiarBuffer();
-        return;
-    }
-    limpiarBuffer();
-    if (!esFechaValida(h_fecha_control)) {
-        printf("Formato de fecha invalido. Debe ser YYYY-MM-DD, ej: 2025-06-25.\n");
-        return;
+
+        EXEC SQL SELECT COUNT(1) INTO :existe_lote
+            FROM lote_materia_prima WHERE id_lote = :h_id_lote;
+
+        if (existe_lote == 0) {
+            printf("  >> El lote %d no existe. Intente con otro ID.\n", h_id_lote);
+            continue;
+        }
+
+        /* Verificar que no este ya rechazado */
+        {
+            EXEC SQL BEGIN DECLARE SECTION;
+            int ultimo_estado    = 0;
+            int ind_ultimo_estado = -1;
+            EXEC SQL END DECLARE SECTION;
+
+            EXEC SQL SELECT id_estado INTO :ultimo_estado :ind_ultimo_estado
+                FROM control_de_calidad
+                WHERE id_lote = :h_id_lote
+                ORDER BY id_control DESC
+                LIMIT 1;
+
+            if (ind_ultimo_estado >= 0 && ultimo_estado == 3) {
+                printf("  >> El lote %d ya fue RECHAZADO y no puede volver a controlarse.\n"
+                       "     Ingrese otro ID.\n", h_id_lote);
+                continue;
+            }
+        }
+        break; /* lote valido */
     }
 
-    printf("Hora del control (HH:MM:SS): ");
-    if (scanf("%9s", h_hora_control) != 1) {
-        printf("Hora invalida.\n");
+    /* -----------------------------------------------------------
+       2. Fecha del control — reintenta hasta formato valido
+       ----------------------------------------------------------- */
+    while (1) {
+        printf("Fecha del control (YYYY-MM-DD): ");
+        if (scanf("%19s", h_fecha_control) != 1) {
+            if (feof(stdin)) {
+            printf("\nFin de entrada (EOF) detectado. Cancelando operacion.\n");
+                return;
+            }
+            printf("  >> Entrada invalida. Intente de nuevo.\n");
+            limpiarBuffer();
+            continue;
+        }
         limpiarBuffer();
-        return;
+        if (!esFechaValida(h_fecha_control)) {
+            printf("  >> Formato incorrecto. Use YYYY-MM-DD, ej: 2025-06-25.\n");
+            continue;
+        }
+        break;
     }
-    limpiarBuffer();
 
-    /* 3. Materia prima controlada */
+    /* -----------------------------------------------------------
+       3. Hora del control — reintenta hasta formato HH:MM valido
+       ----------------------------------------------------------- */
+    while (1) {
+        printf("Hora del control (HH:MM): ");
+        if (scanf("%5s", h_hora_control) != 1) {
+            if (feof(stdin)) {
+            printf("\nFin de entrada (EOF) detectado. Cancelando operacion.\n");
+                return;
+            }
+            printf("  >> Entrada invalida. Intente de nuevo.\n");
+            limpiarBuffer();
+            continue;
+        }
+        limpiarBuffer();
+        if (!esHoraValida(h_hora_control)) {
+            printf("  >> Formato incorrecto. Use HH:MM, ej: 14:30.\n");
+            continue;
+        }
+        /* Agregar segundos para que PostgreSQL acepte el TIME */
+        strcat(h_hora_control, ":00");
+        break;
+    }
+
+    /* -----------------------------------------------------------
+       4. Materia prima del lote (automatica, solo se muestra)
+       ----------------------------------------------------------- */
     EXEC SQL SELECT id_materia INTO :h_id_materia
-        FROM lote_materia_prima
-        WHERE id_lote = :h_id_lote;
+        FROM lote_materia_prima WHERE id_lote = :h_id_lote;
 
-    /* Mostrar la materia prima del lote */
     {
         EXEC SQL BEGIN DECLARE SECTION;
         char nom_mp[101];
         EXEC SQL END DECLARE SECTION;
-        
+
         EXEC SQL SELECT nombre INTO :nom_mp
-            FROM materia_prima
-            WHERE id_materia = :h_id_materia;
+            FROM materia_prima WHERE id_materia = :h_id_materia;
         printf("Materia prima del lote: %s (ID: %d)\n", nom_mp, h_id_materia);
     }
 
-    /* 4. Tipo de control: mostramos las opciones antes de pedir el ID,
-          para no tener que adivinar el numero */
+    /* -----------------------------------------------------------
+       5. Tipo de control — muestra lista y reintenta hasta ID valido
+       ----------------------------------------------------------- */
     printf("\nTipos de control disponibles:\n");
     printf("%-5s | %-40s\n", "ID", "Nombre");
     printf("---------------------------------------------------\n");
 
     EXEC SQL DECLARE cur_tipos_control CURSOR FOR
-        SELECT id_tipocontrol, nombre
-        FROM tipo_control
-        ORDER BY id_tipocontrol;
+        SELECT id_tipocontrol, nombre FROM tipo_control ORDER BY id_tipocontrol;
 
     EXEC SQL OPEN cur_tipos_control;
     {
@@ -377,23 +384,27 @@ void registrarControlCalidad() {
         while (1) {
             EXEC SQL FETCH cur_tipos_control INTO :tc_id, :tc_nombre;
             if (sqlca.sqlcode == 100) break;
-            if (sqlca.sqlcode < 0) break;
+            if (sqlca.sqlcode < 0)   break;
             printf("%-5d | %-40s\n", tc_id, tc_nombre);
         }
     }
     EXEC SQL CLOSE cur_tipos_control;
 
-    printf("\nID Tipo de Control: ");
-    if (scanf("%d", &h_id_tipo_control) != 1) {
-        printf("Tipo invalido.\n");
-        limpiarBuffer();
-        return;
-    }
-    limpiarBuffer();
+    int flag_es_cuant = 0;
 
-    /* Validar que el tipo de control exista (igual que ya se hace con lote y empleado) */
-    int flag_es_cuant = 0;  /* usado mas abajo para decidir como pedir el Valor observado */
-    {
+    while (1) {
+        printf("\nID Tipo de Control: ");
+        if (scanf("%d", &h_id_tipo_control) != 1) {
+            if (feof(stdin)) {
+            printf("\nFin de entrada (EOF) detectado. Cancelando operacion.\n");
+                return;
+            }
+            printf("  >> Debe ingresar un numero. Intente de nuevo.\n");
+            limpiarBuffer();
+            continue;
+        }
+        limpiarBuffer();
+
         EXEC SQL BEGIN DECLARE SECTION;
         int existe_tipo = 0;
         int es_cuant    = 0;
@@ -404,11 +415,11 @@ void registrarControlCalidad() {
             FROM tipo_control WHERE id_tipocontrol = :h_id_tipo_control;
 
         if (existe_tipo == 0) {
-            printf("El tipo de control %d no existe.\n", h_id_tipo_control);
-            return;
+            printf("  >> El tipo de control %d no existe. Elija uno de la lista.\n",
+                   h_id_tipo_control);
+            continue;
         }
 
-        /* Avisar que formato de valor se espera, segun sea cuantitativo o cualitativo */
         EXEC SQL SELECT COUNT(1) INTO :es_cuant
             FROM cuantitativo WHERE id_tipocontrol = :h_id_tipo_control;
 
@@ -418,24 +429,31 @@ void registrarControlCalidad() {
             EXEC SQL SELECT COALESCE(valor_min,0), COALESCE(valor_max,0)
                 INTO :v_min, :v_max
                 FROM cuantitativo WHERE id_tipocontrol = :h_id_tipo_control;
-            printf("Este control es CUANTITATIVO -> ingrese un valor numerico "
-                   "(rango de referencia: %.2f a %.2f).\n", v_min, v_max);
+            printf("Este control es CUANTITATIVO -> rango de referencia: %.2f a %.2f.\n",
+                   v_min, v_max);
         }
+        break;
     }
 
-    /* 5. Valor observado (columna Valor_Medido de Control_De_Calidad) */
+    /* -----------------------------------------------------------
+       6. Valor observado
+       ----------------------------------------------------------- */
     if (flag_es_cuant > 0) {
-        /* Cuantitativo: el valor es una medicion real, se escribe a mano */
-        printf("Valor observado (numero medido): ");
-        if (scanf("%50s", h_valor_medido) != 1) {
-            printf("Valor invalido.\n");
+        while (1) {
+            printf("Valor observado (numero medido): ");
+            if (scanf("%50s", h_valor_medido) != 1) {
+                if (feof(stdin)) {
+                printf("\nFin de entrada (EOF) detectado. Cancelando operacion.\n");
+                    return;
+                }
+                printf("  >> Entrada invalida. Intente de nuevo.\n");
+                limpiarBuffer();
+                continue;
+            }
             limpiarBuffer();
-            return;
+            break;
         }
-        limpiarBuffer();
     } else {
-        /* Cualitativo: se elige de un menu para no tener que memorizar
-           las palabras exactas que reconoce fn_calcular_estado_lote() */
         const char *opciones[8] = {
             "Conforme", "Negativo", "Aprobado", "OK",
             "Defectuoso", "Inaceptable", "Positivo", "Rechazado"
@@ -449,33 +467,49 @@ void registrarControlCalidad() {
         for (i = 4; i < 8; i++) printf("  %d) %s\n", i + 1, opciones[i]);
         printf("  9) Otro (queda como Observado / requiere revision)\n");
 
-        printf("Seleccione una opcion: ");
-        if (scanf("%d", &sel) != 1) {
-            printf("Opcion invalida.\n");
-            limpiarBuffer();
-            return;
-        }
-        limpiarBuffer();
-
-        if (sel >= 1 && sel <= 8) {
-            strncpy(h_valor_medido, opciones[sel - 1], sizeof(h_valor_medido) - 1);
-            h_valor_medido[sizeof(h_valor_medido) - 1] = '\0';
-        } else if (sel == 9) {
-            printf("Describa brevemente lo observado: ");
-            if (scanf("%50s", h_valor_medido) != 1) {
-                printf("Valor invalido.\n");
+        while (1) {
+            printf("Seleccione una opcion: ");
+            if (scanf("%d", &sel) != 1) {
+                if (feof(stdin)) {
+                printf("\nFin de entrada (EOF) detectado. Cancelando operacion.\n");
+                    return;
+                }
+                printf("  >> Debe ingresar un numero del 1 al 9.\n");
                 limpiarBuffer();
-                return;
+                continue;
             }
             limpiarBuffer();
-        } else {
-            printf("Opcion invalida.\n");
-            return;
+
+            if (sel >= 1 && sel <= 8) {
+                strncpy(h_valor_medido, opciones[sel - 1], sizeof(h_valor_medido) - 1);
+                h_valor_medido[sizeof(h_valor_medido) - 1] = '\0';
+                break;
+            } else if (sel == 9) {
+                while (1) {
+                    printf("Describa brevemente lo observado: ");
+                    if (scanf("%50s", h_valor_medido) != 1) {
+                        if (feof(stdin)) {
+                        printf("\nFin de entrada (EOF) detectado. Cancelando operacion.\n");
+                            return;
+                        }
+                        printf("  >> Entrada invalida. Intente de nuevo.\n");
+                        limpiarBuffer();
+                        continue;
+                    }
+                    limpiarBuffer();
+                    break;
+                }
+                break;
+            } else {
+                printf("  >> Opcion invalida. Elija un numero del 1 al 9.\n");
+            }
         }
     }
 
-    /* 6. Unidad de medida */
-    h_ind_rechazo = -1; 
+    /* -----------------------------------------------------------
+       7. Unidad de medida (automatica)
+       ----------------------------------------------------------- */
+    h_ind_rechazo = -1;
     EXEC SQL SELECT COALESCE(cu.unidad_de_medida, 'N/A')
         INTO :h_unidad_medida
         FROM tipo_control tc
@@ -484,13 +518,14 @@ void registrarControlCalidad() {
 
     printf("Unidad de medida detectada: %s\n", h_unidad_medida);
 
-    /* 7. Integridad del envase/empaquetado
-          Validado contra el catalogo Integridad_Envase en vez de texto libre */
+    /* -----------------------------------------------------------
+       8. Integridad del envase — muestra catalogo y reintenta
+       ----------------------------------------------------------- */
     printf("\nOpciones de integridad del envase:\n");
+
     EXEC SQL DECLARE cur_integridad CURSOR FOR
         SELECT id_integridad, nombre_integridad
-        FROM integridad_envase
-        ORDER BY id_integridad;
+        FROM integridad_envase ORDER BY id_integridad;
 
     EXEC SQL OPEN cur_integridad;
     {
@@ -502,13 +537,13 @@ void registrarControlCalidad() {
         while (1) {
             EXEC SQL FETCH cur_integridad INTO :ie_id, :ie_nombre;
             if (sqlca.sqlcode == 100) break;
-            if (sqlca.sqlcode < 0) break;
+            if (sqlca.sqlcode < 0)   break;
             printf("  %d) %s\n", ie_id, ie_nombre);
         }
     }
     EXEC SQL CLOSE cur_integridad;
 
-    {
+    while (1) {
         EXEC SQL BEGIN DECLARE SECTION;
         int id_integridad_sel = 0;
         int existe_integridad = 0;
@@ -516,9 +551,13 @@ void registrarControlCalidad() {
 
         printf("Seleccione integridad del envase (numero): ");
         if (scanf("%d", &id_integridad_sel) != 1) {
-            printf("Opcion invalida.\n");
+            if (feof(stdin)) {
+            printf("\nFin de entrada (EOF) detectado. Cancelando operacion.\n");
+                return;
+            }
+            printf("  >> Debe ingresar un numero. Intente de nuevo.\n");
             limpiarBuffer();
-            return;
+            continue;
         }
         limpiarBuffer();
 
@@ -526,30 +565,33 @@ void registrarControlCalidad() {
             FROM integridad_envase WHERE id_integridad = :id_integridad_sel;
 
         if (existe_integridad == 0) {
-            printf("Opcion de integridad invalida.\n");
-            return;
+            printf("  >> Opcion invalida. Elija un numero de la lista.\n");
+            continue;
         }
 
         EXEC SQL SELECT nombre_integridad INTO :h_integridad_envase
             FROM integridad_envase WHERE id_integridad = :id_integridad_sel;
+        break;
     }
 
-    /* 8. Observaciones */
-    printf("Observaciones: ");
-    if (fgets(h_descripcion, sizeof(h_descripcion), stdin) == NULL) {
+    /* -----------------------------------------------------------
+       9. Observaciones (texto libre, enter = sin observaciones)
+       ----------------------------------------------------------- */
+    printf("Observaciones (Enter para omitir): ");
+    if (fgets(h_descripcion, sizeof(h_descripcion), stdin) == NULL)
         strcpy(h_descripcion, "Sin observaciones");
-    }
     h_descripcion[strcspn(h_descripcion, "\n")] = '\0';
-    if (strlen(h_descripcion) == 0) {
+    if (strlen(h_descripcion) == 0)
         strcpy(h_descripcion, "Sin observaciones");
-    }
 
-    /* 9. Funcionario que realiza el control */
+    /* -----------------------------------------------------------
+       10. Empleado — muestra lista y reintenta hasta ID valido
+       ----------------------------------------------------------- */
     printf("\nEmpleados disponibles:\n");
+
     EXEC SQL DECLARE cur_empleados CURSOR FOR
         SELECT id_empleado, nombre1 || ' ' || apellido1
-        FROM empleado
-        ORDER BY id_empleado;
+        FROM empleado ORDER BY id_empleado;
 
     EXEC SQL OPEN cur_empleados;
     {
@@ -561,38 +603,47 @@ void registrarControlCalidad() {
         while (1) {
             EXEC SQL FETCH cur_empleados INTO :emp_id, :emp_nombre;
             if (sqlca.sqlcode == 100) break;
-            if (sqlca.sqlcode < 0) break;
+            if (sqlca.sqlcode < 0)   break;
             printf("  %d) %s\n", emp_id, emp_nombre);
         }
     }
     EXEC SQL CLOSE cur_empleados;
 
-    printf("ID del Empleado/Funcionario: ");
-    if (scanf("%d", &h_id_empleado) != 1) {
-        printf("ID invalido.\n");
+    while (1) {
+        printf("ID del Empleado/Funcionario: ");
+        if (scanf("%d", &h_id_empleado) != 1) {
+            if (feof(stdin)) {
+            printf("\nFin de entrada (EOF) detectado. Cancelando operacion.\n");
+                return;
+            }
+            printf("  >> Debe ingresar un numero. Intente de nuevo.\n");
+            limpiarBuffer();
+            continue;
+        }
         limpiarBuffer();
-        return;
-    }
-    limpiarBuffer();
 
-    /* Verificar que el empleado existe */
-    {
         EXEC SQL BEGIN DECLARE SECTION;
         int existe_emp = 0;
         EXEC SQL END DECLARE SECTION;
-        
+
         EXEC SQL SELECT COUNT(1) INTO :existe_emp
             FROM empleado WHERE id_empleado = :h_id_empleado;
+
         if (existe_emp == 0) {
-            printf("El empleado %d no existe.\n", h_id_empleado);
-            return;
+            printf("  >> El empleado %d no existe. Elija uno de la lista.\n",
+                   h_id_empleado);
+            continue;
         }
+
         EXEC SQL SELECT nombre1 || ' ' || apellido1 INTO :h_nom_empleado
             FROM empleado WHERE id_empleado = :h_id_empleado;
         printf("Funcionario: %s\n", h_nom_empleado);
+        break;
     }
 
-    /* Calcular estado */
+    /* -----------------------------------------------------------
+       Calcular estado via funcion en la BD
+       ----------------------------------------------------------- */
     EXEC SQL SELECT fn_calcular_estado_lote(:h_id_lote, :h_id_tipo_control, :h_valor_medido)
         INTO :h_id_estado;
 
@@ -602,71 +653,86 @@ void registrarControlCalidad() {
     }
 
     printf("\n--- Resultado del calculo ---\n");
-    if (h_id_estado == 1) {
-        printf("Estado calculado: APROBADO\n");
-    } else if (h_id_estado == 2) {
-        printf("Estado calculado: OBSERVADO (requiere reinspeccion posterior)\n");
-    } else {
-        printf("Estado calculado: RECHAZADO\n");
-    }
+    if      (h_id_estado == 1) printf("Estado calculado: APROBADO\n");
+    else if (h_id_estado == 2) printf("Estado calculado: OBSERVADO (requiere reinspeccion posterior)\n");
+    else                       printf("Estado calculado: RECHAZADO\n");
 
-    /* Manejo del rechazo */
+    /* -----------------------------------------------------------
+       Manejo del rechazo — reintenta descripcion y destino
+       ----------------------------------------------------------- */
     h_id_rechazo  = 0;
-    h_ind_rechazo = -1; 
+    h_ind_rechazo = -1;
 
     if (h_id_estado == 3) {
         printf("\nLote RECHAZADO. Debe registrar el motivo.\n");
-        printf("Descripcion del motivo de rechazo: ");
-        if (fgets(h_desc_rechazo, sizeof(h_desc_rechazo), stdin) == NULL) {
-            strcpy(h_desc_rechazo, "Sin descripcion");
-        }
-        h_desc_rechazo[strcspn(h_desc_rechazo, "\n")] = '\0';
 
-        printf("Destino del lote rechazado:\n");
-        printf("  1) Devuelto al proveedor\n");
-        printf("  2) Descartado\n");
-        printf("Seleccione una opcion: ");
-        {
+        /* Descripcion del rechazo */
+        while (1) {
+            printf("Descripcion del motivo de rechazo: ");
+            if (fgets(h_desc_rechazo, sizeof(h_desc_rechazo), stdin) == NULL) {
+                strcpy(h_desc_rechazo, "Sin descripcion");
+                break;
+            }
+            h_desc_rechazo[strcspn(h_desc_rechazo, "\n")] = '\0';
+            if (strlen(h_desc_rechazo) == 0) {
+                printf("  >> La descripcion no puede estar vacia. Intente de nuevo.\n");
+                continue;
+            }
+            break;
+        }
+
+        /* Destino del lote rechazado */
+        while (1) {
             int destino_sel = 0;
+            printf("Destino del lote rechazado:\n");
+            printf("  1) Devuelto al proveedor\n");
+            printf("  2) Descartado\n");
+            printf("Seleccione una opcion: ");
+
             if (scanf("%d", &destino_sel) != 1) {
-                printf("Opcion invalida, se registra como Descartado por defecto.\n");
-                strcpy(h_destino_rechazo, "Descartado");
-                limpiarBuffer();
-            } else {
-                limpiarBuffer();
-                if (destino_sel == 1) {
-                    strcpy(h_destino_rechazo, "Devuelto al proveedor");
-                } else if (destino_sel == 2) {
-                    strcpy(h_destino_rechazo, "Descartado");
-                } else {
-                    printf("Opcion invalida, se registra como Descartado por defecto.\n");
-                    strcpy(h_destino_rechazo, "Descartado");
+                if (feof(stdin)) {
+                printf("\nFin de entrada (EOF) detectado. Cancelando operacion.\n");
+                    return;
                 }
+                printf("  >> Debe ingresar 1 o 2. Intente de nuevo.\n");
+                limpiarBuffer();
+                continue;
+            }
+            limpiarBuffer();
+
+            if (destino_sel == 1) {
+                strcpy(h_destino_rechazo, "Devuelto al proveedor");
+                break;
+            } else if (destino_sel == 2) {
+                strcpy(h_destino_rechazo, "Descartado");
+                break;
+            } else {
+                printf("  >> Opcion invalida. Ingrese 1 o 2.\n");
             }
         }
 
         EXEC SQL SELECT COALESCE(MAX(id_rechazo), 0) + 1
-            INTO :h_id_rechazo
-            FROM motivo_rechazo;
+            INTO :h_id_rechazo FROM motivo_rechazo;
 
         EXEC SQL INSERT INTO motivo_rechazo (id_rechazo, descripcion_rechazo, destino)
             VALUES (:h_id_rechazo, :h_desc_rechazo, :h_destino_rechazo);
 
         if (sqlca.sqlcode < 0) {
             printf("Error al registrar motivo de rechazo: %s\n", sqlca.sqlerrm.sqlerrmc);
+            EXEC SQL ROLLBACK;
             return;
         }
 
-        h_ind_rechazo = 0; 
+        h_ind_rechazo = 0;
         printf("Motivo de rechazo registrado (ID: %d).\n", h_id_rechazo);
     }
 
-    /* Obtener siguiente ID de control */
+    /* -----------------------------------------------------------
+       Insertar control de calidad y relacion Tiene
+       ----------------------------------------------------------- */
     EXEC SQL SELECT COALESCE(MAX(id_control), 0) + 1
-        INTO :h_max_id_control
-        FROM control_de_calidad;
+        INTO :h_max_id_control FROM control_de_calidad;
 
-    /* Insertar el control de calidad */
     {
         EXEC SQL BEGIN DECLARE SECTION;
         char desc_completa[512];
@@ -674,8 +740,7 @@ void registrarControlCalidad() {
 
         snprintf(desc_completa, sizeof(desc_completa),
                  "Integridad envase: %s. %s",
-                 h_integridad_envase,
-                 h_descripcion);
+                 h_integridad_envase, h_descripcion);
 
         if (h_ind_rechazo == -1) {
             EXEC SQL INSERT INTO control_de_calidad
@@ -702,7 +767,6 @@ void registrarControlCalidad() {
         return;
     }
 
-    /* Insertar en la tabla TIENE */
     EXEC SQL INSERT INTO tiene (id_control, id_lote)
         VALUES (:h_max_id_control, :h_id_lote);
 
@@ -717,44 +781,60 @@ void registrarControlCalidad() {
     printf("\n¡Control de calidad registrado exitosamente! (ID Control: %d)\n",
            h_max_id_control);
 
-    if (h_id_estado == 2) {
+    if (h_id_estado == 2)
         printf("AVISO: El lote quedo en estado OBSERVADO y requerira una reinspeccion.\n");
-    }
 }
 
 /* ================================================================
    FUNCION 3: Reporte de controles por empleado en rango de fechas
-
-   Muestra funcionarios que realizaron controles entre dos fechas,
-   con cantidad de: Aprobados, Rechazados, Observados.
    ================================================================ */
 void reporteControlesEmpleado() {
     int encontrados = 0;
 
     printf("\n--- Reporte de Controles por Empleado ---\n");
 
-    printf("Fecha de inicio (YYYY-MM-DD): ");
-    if (scanf("%19s", h_fecha_desde) != 1) {
-        printf("Fecha invalida.\n");
+    /* Fecha desde — reintenta hasta formato valido */
+    while (1) {
+        printf("Fecha de inicio (YYYY-MM-DD): ");
+        if (scanf("%19s", h_fecha_desde) != 1) {
+            if (feof(stdin)) {
+            printf("\nFin de entrada (EOF) detectado. Cancelando operacion.\n");
+                return;
+            }
+            printf("  >> Entrada invalida. Intente de nuevo.\n");
+            limpiarBuffer();
+            continue;
+        }
         limpiarBuffer();
-        return;
-    }
-    limpiarBuffer();
-    if (!esFechaValida(h_fecha_desde)) {
-        printf("Formato de fecha invalido. Debe ser YYYY-MM-DD, ej: 2025-01-01.\n");
-        return;
+        if (!esFechaValida(h_fecha_desde)) {
+            printf("  >> Formato incorrecto. Use YYYY-MM-DD, ej: 2025-01-01.\n");
+            continue;
+        }
+        break;
     }
 
-    printf("Fecha de fin   (YYYY-MM-DD): ");
-    if (scanf("%19s", h_fecha_hasta) != 1) {
-        printf("Fecha invalida.\n");
+    /* Fecha hasta — reintenta hasta formato valido */
+    while (1) {
+        printf("Fecha de fin   (YYYY-MM-DD): ");
+        if (scanf("%19s", h_fecha_hasta) != 1) {
+            if (feof(stdin)) {
+            printf("\nFin de entrada (EOF) detectado. Cancelando operacion.\n");
+                return;
+            }
+            printf("  >> Entrada invalida. Intente de nuevo.\n");
+            limpiarBuffer();
+            continue;
+        }
         limpiarBuffer();
-        return;
-    }
-    limpiarBuffer();
-    if (!esFechaValida(h_fecha_hasta)) {
-        printf("Formato de fecha invalido. Debe ser YYYY-MM-DD, ej: 2025-12-31.\n");
-        return;
+        if (!esFechaValida(h_fecha_hasta)) {
+            printf("  >> Formato incorrecto. Use YYYY-MM-DD, ej: 2025-12-31.\n");
+            continue;
+        }
+        if (strcmp(h_fecha_hasta, h_fecha_desde) < 0) {
+            printf("  >> La fecha de fin no puede ser anterior a la de inicio. Intente de nuevo.\n");
+            continue;
+        }
+        break;
     }
 
     printf("\nRango: %s  a  %s\n", h_fecha_desde, h_fecha_hasta);
@@ -762,16 +842,12 @@ void reporteControlesEmpleado() {
            "Funcionario", "Aprobados", "Rechazados", "Observados");
     printf("--------------------------------------------------------------------\n");
 
-    /*
-     * Consulta que agrupa controles por empleado en el rango dado.
-     * Usa los IDs de estado: 1=Aprobado, 2=Observado, 3=Rechazado
-     */
     EXEC SQL DECLARE cur_reporte CURSOR FOR
         SELECT
             e.nombre1 || ' ' || e.apellido1  AS nombre_completo,
-            COUNT(CASE WHEN c.id_estado = 1 THEN 1 END)  AS aprobados,
-            COUNT(CASE WHEN c.id_estado = 3 THEN 1 END)  AS rechazados,
-            COUNT(CASE WHEN c.id_estado = 2 THEN 1 END)  AS observados
+            COUNT(CASE WHEN c.id_estado = 1 THEN 1 END) AS aprobados,
+            COUNT(CASE WHEN c.id_estado = 3 THEN 1 END) AS rechazados,
+            COUNT(CASE WHEN c.id_estado = 2 THEN 1 END) AS observados
         FROM empleado e
         JOIN control_de_calidad c ON e.id_empleado = c.id_empleado
         WHERE c.fecha BETWEEN :h_fecha_desde AND :h_fecha_hasta
@@ -794,7 +870,6 @@ void reporteControlesEmpleado() {
                  :h_cant_observados;
 
         if (sqlca.sqlcode == 100) break;
-
         if (sqlca.sqlcode < 0) {
             printf("Error al leer reporte: %s\n", sqlca.sqlerrm.sqlerrmc);
             EXEC SQL ROLLBACK;
@@ -811,9 +886,9 @@ void reporteControlesEmpleado() {
 
     EXEC SQL CLOSE cur_reporte;
 
-    if (encontrados == 0) {
+    if (encontrados == 0)
         printf("No se encontraron controles en ese rango de fechas.\n");
-    } else {
+    else {
         printf("--------------------------------------------------------------------\n");
         printf("Total de empleados con controles en el periodo: %d\n", encontrados);
     }
