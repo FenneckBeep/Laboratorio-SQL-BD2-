@@ -47,5 +47,3 @@ SELECT
 
 -- Auditor
 GRANT SELECT ON informe_2025 TO auditor;
-
-GRANT SELECT ON informe_2025 TO auditor;
